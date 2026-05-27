@@ -1,0 +1,552 @@
+
+--- Strana 1 ---
+Full Terms & Conditions of access and use can be found at
+http://www.tandfonline.com/action/journalInformation?journalCode=tprs20
+Download by: [University of Hong Kong Libraries]
+Date: 14 July 2017, At: 15:48
+International Journal of Production Research
+ISSN: 0020-7543 (Print) 1366-588X (Online) Journal homepage: http://www.tandfonline.com/loi/tprs20
+Smart manufacturing
+Andrew Kusiak
+To cite this article: Andrew Kusiak (2017): Smart manufacturing, International Journal of
+Production Research, DOI: 10.1080/00207543.2017.1351644
+To link to this article:  http://dx.doi.org/10.1080/00207543.2017.1351644
+Published online: 14 Jul 2017.
+Submit your article to this journal 
+View related articles 
+View Crossmark data
+
+--- Strana 2 ---
+Smart manufacturing
+Andrew Kusiak*
+Intelligent Systems Laboratory, Department of Mechanical and Industrial Engineering, The University of Iowa, Iowa City, IA, USA
+(Received 21 April 2017; accepted 29 June 2017)
+Manufacturing has evolved and become more automated, computerised and complex. In this paper, the origin, current
+status and the future developments in manufacturing are disused. Smart manufacturing is an emerging form of produc-
+tion integrating manufacturing assets of today and tomorrow with sensors, computing platforms, communication technol-
+ogy, control, simulation, data intensive modelling and predictive engineering. It utilises the concepts of cyber-physical
+systems spearheaded by the internet of things, cloud computing, service-oriented computing, artiﬁcial intelligence and
+data science. Once implemented, these concepts and technologies would make smart manufacturing the hallmark of the
+next industrial revolution. The essence of smart manufacturing is captured in six pillars, manufacturing technology and
+processes, materials, data, predictive engineering, sustainability and resource sharing and networking. Material handling
+and supply chains have been an integral part of manufacturing. The anticipated developments in material handling and
+transportation and their integration with manufacturing driven by sustainability, shared services and service quality
+and are outlined. The future trends in smart manufacturing are captured in ten conjectures ranging from manufacturing
+digitisation and material-product-process phenomenon to enterprise dichotomy and standardisation.
+Keywords: smart manufacturing; data mining; automated manufacturing systems; design of production systems;
+sustainable manufacturing; product life cycle; intelligent manufacturing systems; transportation; cyber-physical systems
+1. Introduction
+One of the widely used terms describing the production of tomorrow is smart manufacturing. The volume of publica-
+tions on smart manufacturing is rapidly growing. Many publications focus on in-depth coverage of the topics shaping
+smart manufacturing. This paper deﬁnes what the author believes are core concepts of importance to smart manufactur-
+ing in the hope of streamlining and systemising the growing body of research.
+Smart manufacturing has attracted attention of numerous researchers who reported their ﬁndings in the literature.
+Thoben, Wiesner, and Wuest (2017) discussed the main characteristics of cyber-physical systems and provided an over-
+view of Germany’s Industry 4.0 initiative and manufacturing efforts undertaken in other counties. An attempt was made
+to identify relevant research issues. Kang et al. (2016) reviewed the literature related to smart manufacturing and identi-
+ﬁed technologies of importance to its progress. In addition, some future trends in smart manufacturing were discussed.
+Helu et al. (2016) deﬁned requirements for data-driven decision-making in manufacturing. Based on these requirements,
+main technologies and barriers facing implementation of data-driven decision-making in industry were identiﬁed. Lu,
+Morris, and Frechette (2016) reported on the standards that may impact products, systems and business aspects of smart
+manufacturing. O’Donovan, Bruton, and O’Sullivan (2016) focused on problems facing applications of data analytics in
+industry. The authors advocated the use of formal methodologies to develop analytics capability rather than focusing on
+prescriptive approaches. The methodology discussed in their paper was demonstrated with a case study. Standards are
+important in integration of smart manufacturing technologies facing transformation challenges, some of which were out-
+lined in Macke, Rulhoff, and Stjepandic (2016). A tool deployed on mobile devices for initiating queries in support of
+incoming changes was discussed. Zhang et al. (2014) overviewed technologies such as cloud computing, internet of
+things, service-oriented solutions and high performance computing. It was suggested that they make a cloud manufactur-
+ing platform outlined in their paper. Shaﬁq et al. (2015) proposed a framework for knowledge representation of engi-
+neering objects incorporating relevant knowledge and experience. It was demonstrated that the framework was a
+specialisation of a cyber-physical system. Zhong et al. (2017) discussed the concept of smart manufacturing objects
+handled with the internet of things and wireless technologies. Data analytics was applied to study behaviour of smart
+manufacturing objects.
+*Email: andrew-kusiak@uiowa.edu
+© 2017 Informa UK Limited, trading as Taylor & Francis Group
+International Journal of Production Research, 2017
+https://doi.org/10.1080/00207543.2017.1351644
+
+--- Strana 3 ---
+Besides architectures and concepts of interests to smart manufacturing, research offering speciﬁc models and
+algorithms has been initiated. Ivanov et al. (2016) addressed the short-term supply chain scheduling in a smart factory.
+A scheduling approach involving non-stationary jobs ﬂow and temporal decomposition was developed. Moon and Park
+(2014) offered a scheduling solution for management of energy consumption in manufacturing. Chun and Bidanda
+(2013) reviewed the literature on sustainable manufacturing. They raised the issue of sustainability in global manufactur-
+ing, design for sustainability, product life-cycle management and green supply chain management.
+Cybersecurity is paramount to the progress in smart manufacturing. Kim and Chang (2014) discussed information
+leakage vulnerabilities faced by organisations and offered some solutions.
+2. The roots of smart manufacturing
+The modern era manufacturing has its roots in the past half century. The progress in computer and machine-building
+technology has led to automation in manufacturing. Today’s machine tools are largely run by computer programmes
+rather than human operators. Materials and components are transported by automated material handling systems and
+stored in automated storage and retrieval systems. Depending on the scope and degree of automation of a manufacturing
+ﬂoor and the integration of various functional production areas, different terms have been used to describe automated
+manufacturing since 1980s, ranging from ﬂexible manufacturing cells and ﬂexible manufacturing systems to computer-
+integrated manufacturing and intelligent manufacturing. The last term was coined around 1990 and marked with the
+establishment of the Journal of Intelligent Manufacturing (Kusiak 1990a) and publication of the book, Intelligent Manu-
+facturing Systems (Kusiak 1990b) both under development for years prior to appearing in print. At about the same time
+Japan has embarked on research in intelligent manufacturing that has led to the establishment of the Intelligent Manu-
+facturing System (IMS) Programme in support of industrial research in 1995. It was realised that the industry of one
+country alone could not reshape manufacturing and that international cooperation was needed. Major companies from
+Japan, United States, Korea and European counties have initiated collaborative efforts on the future of manufacturing,
+with Japan having the largest number of actively involved corporations. In the United States, much of the IMS activities
+have taken place under the umbrella of the Next Generation Manufacturing Systems (NGMS) Programme that was
+established as a not-for-proﬁt venture. Later, the IMS Programme was expanded, with the European Union establishing
+research efforts in intelligent manufacturing (see Groumpos 1995).
+Manufacturing is evolving, and it is bound to take place in different forms. In recent years, the concept of internet
+of things has attracted attention of the manufacturing community. It focuses on integration of the physical assets of man-
+ufacturing with the cyberspace to form cyber-physical systems. This new concept has been embraced by individual com-
+panies, industrial consortia, regions and countries.
+There is no generally accepted deﬁnition of smart manufacturing. According to the National Institute of Standards
+and Technology (NIST) smart manufacturing is fully integrated, collaborative manufacturing system that respond in real
+time to meet changing demands and conditions in the factory, in the supply network and in customer needs.
+Smart manufacturing integrates manufacturing assets of today and tomorrow with sensors, computing platforms,
+communication technology, data intensive modelling, control, simulation and predictive engineering. Smart manufactur-
+ing utilises the concepts of the cyber-physical systems, internet of things (and everything), cloud computing, service-
+oriented computing, artiﬁcial intelligence and data science. Once implemented, these overlapping concepts and
+technologies will make manufacturing the hallmark of the next industrial revolution.
+A general concept of a smart manufacturing enterprise is illustrated in Figure 1.
+The concept in Figure 1 includes two basic layers, the manufacturing equipment layer and the cyber layer, linked by
+the interface. The manufacturing equipment has its own intelligence, while the system-wide intelligence is provided by
+the cyber layer.
+Smart manufacturing has attracted attention of industry, government organisations and academia. Various consortia
+and discussion groups have been formed to develop architectures, roadmaps, standards and research agenda. The general
+concept of smart manufacturing system in Figure 1 needs to be translated in architectures that are quite speciﬁc. Efforts
+are under way to develop such architectures. The general concept in Figure 1 is intended to support the ideas presented
+in this paper rather than offering a new enterprise architecture.
+3. Pillars of smart manufacturing
+Smart manufacturing has been inspired by the concepts largely developed in the realm of computing. Though manufac-
+turing will continue beneﬁt from these concepts and other ideas that will emerge (e.g. quantum computing could be a
+major disruptor), it has its own identity captured in six pillars that are discussed next (see Figure 2). They are neither
+2
+A. Kusiak
+
+--- Strana 4 ---
+exhaustive nor stationary. The ultimate pillars will be deﬁned by the research, technology development and applications
+that will emerge in the future. The ultimate pillars could be formally deﬁned in number of ways, including clustering of
+the research papers, industrial reports and information about new technology with text and data mining algorithms.
+The six pillars of smart manufacturing are manufacturing technology and processes, materials, data, predictive engi-
+neering, sustainability and resource sharing and networking. The names and the degree of importance of these six pillars
+have been changing, however, they have been around manufacturing throughout its history. For example, data has been
+an integral part of manufacturing. In the era of smart manufacturing it has become big data. Production planning and
+forecasting have preceded predictive engineering versed in data science of today.
+Details of the six pillars of smart manufacturing are discussed next.
+Pillar 1: Manufacturing technology and processes
+The emergence of manufacturing technologies and processes are expected in future years. New materials, compo-
+nents and products will emerge (Kusiak 2016a). Additive manufacturing can serve as an example of a new technology
+that has prompted the development of new materials, impacted the design and manufacture of products and opened
+doors to new applications such as biomanufacturing. Manufacturing tools have been designed to integrate various opera-
+tions, e.g. machines that are capable of horizontal and vertical milling as well as drilling (a machining centre). New
+hybrid processes will emerge, e.g. hybrids of traditional and additive processes, laser and net-shape manufacturing.
+Greater integration of processes will occur, e.g. integration of new materials, product design, manufacturing processes,
+such as discovery of a chemical compound leading to design of a new medication and a delivery device, as well as the
+manufacture of medication and the device. Big and small area additive manufacturing will expand its prominence in the
+factories. New generation of low cost robots will enhance factory automation. Sensors and software capabilities will
+make the new manufacturing equipment smarter and amenable to factory and beyond communication.
+Interface                                        Standard connectivity 
+Cyberspace                                    System  intelligence   
+Data
+Decisions
+Data
+Decisions
+Manufacturing equipment                    Local intelligence
+Figure 1.
+General concept of a smart manufacturing enterprise.
+Materials
+Sustainability
+Resource 
+sharing and 
+networking
+Predictive 
+engineering
+Data
+Smart manufacturing
+Manufacturing 
+technology and 
+processes
+Figure 2.
+Six pillars of smart manufacturing.
+International Journal of Production Research
+3
+
+--- Strana 5 ---
+Pillar 2: Materials
+Smart manufacturing does not make a special call for the development of smart materials, e.g. shape memory alloys
+or functionally graded materials. It may well be that smart materials and smart products will follow their own develop-
+ment paths. Smart manufacturing is open to all types of materials, including organic-based materials and biomaterials,
+needed to produce future products. The signiﬁcance of recovering materials from products at the end of their lifecycle
+will increase. It is conceivable that landﬁlls will become new mines of various materials. Some new materials will
+require novel processes that must be developed and incorporated in smart manufacturing. Additive manufacturing alone
+will be a great contributor to the search for new materials and their mixes.
+Pillar 3: Data
+We are witnessing the renaissance of data in manufacturing. Some of it has been triggered by deployment of sensors,
+wireless technology and the progress in data analytics. Greater collection of data from diverse sources, ranging from
+material properties and process parameters to customers and suppliers has begun. The data will be used to power any
+application to be envisioned, including building predictive models. Moreover, it will be the best source for preserving
+and extraction of past and new knowledge related to manufacturing.
+Pillar 4: Predictive engineering
+Predictive engineering is one of the latest additions to the space of manufacturing solutions that will lead to an antici-
+patory rather than reactive enterprise. Traditionally, the manufacturing industry has focused on using data for analysis,
+monitoring and control, e.g. productivity analysis, process monitoring and quality control. Six sigma and other data-anal-
+ysis concepts have had tremendous impact on advances in the quality of manufactured products and services. However,
+for the most part, traditional efforts have emphasised the past over the future states of manufacturing processes and sys-
+tems. Predictive engineering offers a new paradigm of constructing high-ﬁdelity models (digital representations) of the
+phenomena of interest. Such models will allow exploring future spaces, some within the realm of the existing technology
+and others that have not been seen previously. In the future, today’s models will be enriched with both limited-scope
+models (e.g. behaviour of a supply chain) and those that involve multiple systems (e.g. models that integrate productivity,
+product quality, energy and transport) to support decisions concerning future production and market conditions. Such
+wide-scope models may contribute to restructuring the manufacturing industry. It is conceivable that some manufacturing
+will become highly distributed and some may be centralised. For example, products that are sensitive to the transportation
+cost, time-to-market and customisation could be produced at locations in the proximity to the customers.
+Pillar 5: Sustainability
+Sustainability will be of paramount importance in manufacturing. The goals of sustainability efforts will be materi-
+als, manufacturing processes, energy and pollutants attributed to manufacturing. The entry points of any major sustain-
+ability effort are the product and the market. There is no doubt that the greatest sustainability gains are accomplished
+when the development of products and processes is guided by the sustainability criteria. Examples of possible scenarios
+include: (i) sustainable product design will drive manufacturing, (ii) sustainable manufacturing processes will impact the
+design of products and (iii) simultaneous development of sustainable materials, products and processes will take place.
+Additive manufacturing represents the second scenario in which a process has resulted in new designs of components
+and products.
+Sustainability is not about what is manufactured but how it is performed. It is the main force behind providing equal
+footing for remanufacturing, reconditioning and reuse with manufacturing. Because of sustainability, the line between
+manufacturing and service will remain blurry. For example, reconditioning a used product is not a traditional manufac-
+turing activity, however, it may enter the new manufacturing dictionary.
+Pillar 6: Resource sharing and networking
+As manufacturing is becoming digital and virtual, much of the creative and decision-making activities will take place
+in the digital space. While at some level the digital space may be highly transparent, the physical manufacturing assets
+with their know-how will be protected. This digital-physical separation will allow for shared use of resources across
+businesses, including the ones that compete.
+The manufacturing industry has been exposed to service and contract models with production taking place at facili-
+ties operated by a third party. The rapid manufacturing (a predecessor of 3D printing) service model was established
+decades ago as a result of the high cost of technology, low utilisation, learning curve and uncertainly about utility of the
+technology. Shared resource models have seen success and are expanding from sharing rides aimed at reducing highway
+trafﬁc to Uber in transportation and Airbnb in accommodation services. Smart manufacturing is likely to beneﬁt from
+these concepts to share manufacturing equipment, software, expertise and most importantly, the collaborative modelling
+and creativity space (Kusiak 2017b).
+While the logistics of leasing manufacturing equipment and sharing commercial software could follow the existing
+models, sharing the creativity space is a challenge. Application of the principles similar to those of Facebook and
+4
+A. Kusiak
+
+--- Strana 6 ---
+Wikipedia to various areas of manufacturing is not easy and will likely take decades to realise. All sharing transactions
+will be accomplished in the space populated with digital models rather than physical assets.
+Besides the manufacturing equipment, transport is a meaningful resource that deserves attention. There are two
+broad categories of transport in manufacturing: internal, involving specialised material handling equipment or various
+tracks and external, which serves the supply and distribution chain. From the manufacturing accounting point of view,
+transport is generally considered as a non-value-adding activity. This triggers a thought that minimising the distances
+travelled would not only reduce the cost, but also have a positive environmental impact. Developments in robotics and
+autonomous vehicles (from surface to air) will impact the internal and external manufacturing transport by increasing its
+degree of autonomy and sharing. Transport will be an important factor in evolving the spatial conﬁguration of manufac-
+turing on a regional and global scale.
+3.1 Beyond the manufacturing tradition
+The manufacturing of the future will naturally expand into non-traditional areas such as:
+• Healthcare largely driven by the need to customise products, from the implants and medications to the hospital
+and home care supplies;
+• Biomanufacturing fueled by the promise of tissue and organ printing.
+Both small area additive manufacturing (e.g. surgical equipment) and large area additive manufacturing (e.g. hospital
+beds, furniture) will be the key drivers in the healthcare industry.
+In addition, the domains that might have been considered as marginal will gain more prominence, e.g.:
+• Remanufacturing and reconditioning are bounded to grow especially when novel design practices will be
+deployed;
+• Disassembly and reuse will become growing contributors to the circular economy.
+Sustainability, increasing cost of traditional materials and limited availability of traditional materials (e.g. rare metals)
+will support the circular economy.
+4. Material handling and transport of materials, components, products and people
+Material handling and transport are inherent functional areas of manufacturing involving distances measured in nanome-
+ter to kilometre scale. Both support manufacturing processes and shipment across different plants and around the globe.
+While material handing is usually used to describe the movement of material in a factory, transport is associated the
+movement of materials, components and products through supply chains covering regions, counties and continents (see
+Figure 3). Material handling and transportation can be signiﬁcant contributors to the product cost, e.g. 8% of the cost of
+a wind turbine tower is attributed to the transport (Cotrell et al. 2014) and higher percentage (e.g. 20%) to other compo-
+nents.
+It is likely that due to the distributed nature of manufacturing, transport of materials, components, products and peo-
+ple will become a signiﬁcant cost item in production. This will naturally lead to optimisation of the transportation and
+utilisation cost of personnel supporting the physical and digital infrastructure at multiple manufacturing facilities. Job
+description that do not exist today, will be created to meet the smart manufacturing tasks. Similar to components,
+Supply network
+Smart manufacturing
+enterprise
+Distribution network
+Material handling
+Transport
+Transport
+Figure 3.
+Integration of manufacturing with supply and distribution chain.
+International Journal of Production Research
+5
+
+--- Strana 7 ---
+e.g. differentiating the products, manufacturing specialists could be travelling in large numbers using different modes of
+transportation from cars to trains and plains. As discussed later in this paper, analogous to the manufacturing resources,
+human resources are likely to be shared in large numbers. The efﬁciency of transporting materials, components, products
+and people will impact the manufacturing cost. Transportation and communication are the cornerstone of global connec-
+tivity in manufacturing. Irrespective of the ownership, transportation is likely to become an integral part of smart manu-
+facturing due to: (i) greater reliance on the movement of materials, components, products and service personnel driven
+by personalised needs, (ii) sustainability; (iii) quality of service. Transportation networks involving the supply side and
+distribution (including customer delivery) similar to the one shown in Figure 3 are likely to play a meaningful role.
+Limiting the sustainability consideration to the manufacturing envelope, would provide a suboptimal solution due to
+interconnectivity of manufacturing with the supply and distribution network trade-offs. The quality of customer service
+is tightly connected to the inventory level, manufacturing response time and transportation.
+4.1 Smart vehicles
+Many material handling and transportation vehicles operating today send and receive data. The vehicle connectivity will
+become more intense, with greater participation in the information exchange, e.g. vehicle-to-vehicle communication or
+vehicle-to-maintenance centre for remote diagnostic and repair. In fact, machine tools are likely to follow the same path
+of communications supporting condition monitoring and production.
+The vehicle technology circle in Figure 4 classiﬁes transportation vehicles based on the vehicle/fuel type and vehicle
+automation/use. Vehicles based on any combination of the vehicle/fuel type and vehicle automation/use attribute are cap-
+tured. For example, it is obvious that a vehicle can be autonomous and electric. This applies to material handling sys-
+tems, personal cars, trucks and mass transit. It appears that the technology is naturally gravitating towards linking the
+notion of transportation, energy and sustainability with manufacturing. Vehicle of any type, e.g. a forklift, a car, a truck
+or a long-distance train, can be electric and autonomous. In addition, vehicles could be shared.
+To date, the batteries of electric vehicles are charged by electricity that is usually generated by traditional power
+plants. In the future, vehicles will use electricity generated from renewable sources, e.g. wind turbine-produced electric-
+ity or hydrogen, and they will be designed for sustainability, including energy efﬁciency. An energy-efﬁcient vehicle
+will use less material and its geometry will be shaped to reduce aerodynamic drag. At the end of its life, most of its
+components will be reused and remanufactured. To date, the subject of the sustainable design of electric vehicles has
+received limited attention. Perhaps the vehicle industry is overly preoccupied with making a successful entry in the
+autonomous market.
+This concept of vehicle connectivity is not new. It has existed in the domain of public transportation for a long time.
+In the mass-transit domain, it was implemented in two forms, i.e. the physical and information connectivity. A train is a
+physically connected vehicle with over-the-wire or wireless communication. The beneﬁts of the traditional connectivity
+may apply to the new generation of vehicles and material handling solutions. Similar to machine tools, vehicles can be
+connected physically or virtually. The virtual connection can be accomplished in several ways, ranging from the
+vehicle-to-vehicle communication to the trafﬁc control level. A connected vehicle is a natural result of the evolution in
+productivity, efﬁciency and safety of transportation. For example, similar to manufacturing where one operator may
+operate multiple machines, having one driver per many vehicles offers a cost advantage.
+The idea of shared transportation in the personal-vehicle domain has existed for years. The reward for shared trans-
+portation usually was in the form of access to a less-congested lane on the highway. The owner of the vehicle generally
+Traditional vehicle
+Fossil fuel
+Electric vehicle
+Non-renewable electricity
+Electric vehicle
+Renewable energy
+Sustainable vehicle design
+Renewable energy
+Semi-autonomous
+Autonomous
+Connected
+Shared
+Traditional
+Vehicle type/
+Fuel type
+Vehicle automation/
+Use mode
+Figure 4.
+Vehicle classiﬁcation based on vehicle/fuel type and vehicle automation/use.
+6
+A. Kusiak
+
+--- Strana 8 ---
+is one of the passengers. Shared group transportation is a well-established practice, ranging from small groups (e.g. six
+to ten people in a van) to a mass transit system.
+Using a vehicle that we own for personal transportation is inefﬁcient from the standpoint of energy and cost. The
+utilisation of personal vehicles is usually low. We tend not to think that way, however, when what we really need is a
+transportation service, without necessarily owning a vehicle. Subscribing to the transportation service concept offers
+increased utilisation of vehicles and reduces transportation costs. The increased utilisation, in turn, reduces the number
+of vehicles on the roads, thus having a positive impact on the trafﬁc congestion and environment.
+We are not that far from being on the top of the vehicle technology circle in Figure 4. The capacity of the batteries
+is expanding. At present it is sufﬁcient for most trips driven. All major manufacturing companies, including Ford,
+BMW and Volvo, promise to deliver driverless cars (in some cases without a steering wheel and pedals) in the next few
+years. Irrespectively of the level of autonomy, a future vehicle will be more automated, connected, energy efﬁcient and
+safer to drive. He hope is that electricity generated from renewable sources will power the vehicles and factories. The
+factories will use renewable materials to manufacture components that meet the transportation needs.
+There is no magic switch and time for changeover from the transport of today to the autonomous one. Neither there
+is no clearly articulated goal for the level of autonomy. As with any new technology the transport autonomy will follow
+a process beginning with some niche implementations and gradually expanding to most suitable domains, e.g. manufac-
+turing supply and distribution chains.
+The missing link that prevents connecting the dots between autonomous, personal, shared and sustainable transporta-
+tion is the human factors, rather than technology. In the vehicle-sharing mode, the difference between the personal and
+the mass-transportation modes may not be clear. Clearly, transportation is more economical when the materials and pas-
+senger loads and grouped, e.g. two connected trucks, rather than multiple vehicles with limited load in each vehicle.
+Besides being autonomous, vehicles are becoming more reliable. Predictive engineering solutions will anticipate
+future events, ranging from a component of the vehicle that may need repair to a potential accident. The on-board deci-
+sion system will offer the best options to proceed in order to avoid a component failure or an accident impacting the
+delivery time. All disruptions will be communicated to the manufacturing facilities that might be affected by the trans-
+port.
+Different forms and modes of transportation will be used to support the supply and distribution chains of manufac-
+turing. A shared mode of transportation is likely to be applied to move experts servicing the manufacturing systems, as
+well as materials, parts and products.
+5. The future of smart manufacturing
+Smart manufacturing offers opportunities and challenges. The greatest challenge could be in the acceptance of the
+emerging manufacturing reality and change. A new wave of factory automation will be supported by the next generation
+of low-cost robotics. This alone will create new ‘cyber’ jobs rather than traditional jobs. The conversion of blue-collar
+jobs into white-collar jobs is not new, yet it is a challenge every time it happens. The ‘cyber’ part of the smart factory,
+in itself, is an enterprise within the enterprise, with jobs descriptions to be deﬁned and a workforce to be trained by the
+educational establishments. The better we understand the future needs, the better smart enterprise will function.
+The transformation of the manufacture of today to the manufacture of the future is an enormous task. No single cor-
+poration can be effective in accomplishing all tasks on its own due to the market and technology uncertainty. The items
+actions needed for smart manufacturing to be successful are outlined in Kusiak (2017b).
+Smart manufacturing is evolving and its speciﬁcs will emerge in years to come. Some of the characteristics of the
+future manufacturing are captured by the ten conjectures outlined next. For each conjecture a brief justiﬁcation of pro-
+vided. The conjectures are intended to capture the essence of smart manufacturing. Some of them may become validated
+or become less prominent of even discarded over time, while new conjectures may be formed. They may enhance
+understanding of the core manufacturing issues as well as capture trends and changes affecting smart manufacturing.
+Conjecture 1: Manufacturing digitalisation
+Manufacturing will be increasingly dependent on data which implies than more data needs to be collected.
+Justiﬁcation: The increased use of data is already happening in many manufacturing sectors. One of the practices
+manufacturing could beneﬁt from is that of wind energy industry where supervisory control and data acquisition
+(SCADA) systems have been used (Kusiak 2016b) to store large volumes of data on process parameters. SCADA solu-
+tions offer a convenient way of capturing, storing and sharing process data.
+Conjecture 2: Increased reliance on modelling, optimisation and simulation
+The growing volume of data (Conjecture 1) in smart manufacturing will naturally open doors to delivery of value
+from the data.
+International Journal of Production Research
+7
+
+--- Strana 9 ---
+Justiﬁcation: Data-driven modelling approaches will gain prominence as they allow to integrate parameters across
+different domains (e.g. product, process and logistics) into models that would be difﬁcult to build with traditional
+methodologies (e.g. mathematical programming). Dynamic predictive models will be frequent occurrences in smart man-
+ufacturing. Virtual, augmented reality and predictive models will become routine constructs.
+Conjecture 3: Material-product-process phenomenon
+The number of instances with the new material, process and product developed simultaneously will grow.
+Justiﬁcation: Some of the past innovations have taken place when a new material and a process had been created at
+the same time. In is likely that in the future the development of materials, processes and products will lead to innova-
+tions, e.g. design of a 3D printed part will be optimised in conjunction with a new material and a process.
+Conjecture 4: Vertical separability of the physical assets and the cyberspace
+In many smart enterprises the physical layer and the logistics layer (see Figure 1) will be designed for the ease and
+speed of connecting and disconnecting from each other. The vertical reparability will be largely attributed to the need of
+reconﬁguration of the physical assets.
+Justiﬁcation: The growing need to conﬁgure and reconﬁgure physical assets to better support the changing product
+needs supported by the expanding digitisation and standardisation will lead to new system architectures. The new archi-
+tecting will be characterised by the ease of vertical separability of the physical and the cyber layer of an enterprise.
+Conjecture 5: Enterprise dichotomy
+Two extreme smart enterprise models are likely to emerge, one where the physical assets and logistics are tightly
+connected (of the type in Conjecture 3) and the other with vertical separability of the two layers (Conjecture 4).
+Justiﬁcation: The tight vertical connectivity or vertical separabilty models (a dichotomy) may emerge in the spirit of
+Conjecture 3 and Conjecture 4, respectively.
+Conjecture 6: Greater horizontal connectivity and interoperability
+The degree of horizontal internal and external connectivity and interoperability of smart manufacturing enterprises
+will increase.
+Justiﬁcation: This will be driven by the need to reconﬁgure the physical and logistics assets within an enterprise and
+among different enterprises. Standardisation (Conjecture 9) will serve as an enabler in both layers. The growing volume
+and ﬂow rate of data across a modern enterprise will naturally lead to adopting solutions supporting greater horizontal
+connectivity and interoperability of the systems accommodating the data ﬂow.
+Conjecture 7: Resource sharing
+Sharing manufacturing and transportation resources across manufacturing chains will become a common practice.
+Justiﬁcation: The unprecedented degree of horizontal connectivity of smart enterprises (Conjecture 6) combined with
+the dynamics of the markets will facilitate sharing manufacturing equipment, transportation and other resources. Innova-
+tion of manufacturing equipment could beneﬁt from resource sharing as companies may purchase equipment based on
+an explicit assumption that it will be shared.
+Conjecture 8: Equipment monitoring, diagnosis and repair autonomy
+Diagnosis and prediction of equipment faults will become routine in smart manufacturing. In some cases autono-
+mous repair may take place.
+Justiﬁcation: Monitoring of equipment generates data (Conjecture 1) supporting the diagnostic models (Conjecture
+2) deployed to monitor and predict health status of the equipment and systems. Preventing faults from occurring and
+anticipation of the future faults will become a common practice.
+Conjecture 9: Standardisation and collaboration
+Collaborative development of standards may naturally emerge to meet the emerging needs of integration and inter-
+connectivity of enterprises.
+Justiﬁcation: The growing reliance on data (Conjecture 1), resource sharing (Conjecture 7) and the need for vertical
+separabilty (Conjecture 4) and horizontal connectivity and interoperability (Conjecture 6) will drive the need for stan-
+dardisation and collaboration. The complexity of the tasks at hand will likely enhance collaboration. It would be useful
+to have parametric standards reﬂecting the readiness of an enterprise for horizontal and vertical connectivity and interop-
+erability. Based on these metrics, an enterprise could be assigned a class, e.g. Class 4 (out of ﬁve classes) enterprise
+could easily engage in business with any other Class 4 or lower enterprises. Such standard would speed up enterprise
+reconﬁgurability and integration.
+Conjecture 10: Cybersecurity and safety
+Cybersecurity and safety issues will remain a challenge to be continuously addressed.
+Justiﬁcation: Growing volumes and reliance on data (Conjecture 1) make cybersecurity paramount to the progress in
+smart manufacturing and business competitiveness. This is especially important as data assets will become a growing
+indicator of the market value of a company. The increasing degree of automation and system autonomy will raise the
+8
+A. Kusiak
+
+--- Strana 10 ---
+importance of human and machine safety. Condition monitoring solutions and warning systems (Conjecture 8) will gain
+importance. In fact, the commonality between solutions developed for equipment diagnosis and cybersecurity may be
+explored.
+5.1 How to accelerate the smart manufacturing transformation?
+A viable approach to increase effectiveness of the manufacturing transformation is in large-scale collaboration on the
+core issues attributed to the industries with the largest societal impact. Creation of an open development platform
+involving key industries could enable such collaboration, including development of data-driven models.
+There is no doubt that open platforms will be realised at different scales. Research on collaborative manufacturing
+networks has demonstrated the value of tools in joint international projects. However, expanding the scope and scaling
+up the collaborative modelling tasks makes it a worthwhile effort. As in any collaborative venture, trust and revealing
+of information must be overcome. Getting deeper insights into the trust at smaller scale platforms would be the initial
+step to address sharing information and knowledge. Modelling at different scales is needed to attract industry, small and
+large, to a common collaboration table. In fact, making sure that small and medium enterprises join the table with large
+corporations is critical. The degree of engagement of small and medium size businesses in designing the enterprise of
+the future is variable across the world. While the small business entrepreneurship initiatives generally prevail in the Uni-
+ted States, Asia and Europe have shown more interests in issues affecting the functioning small businesses. To make the
+progress diversity of ideas, cultures, needs and openness are needed. More details of the manufacturing transformation
+are discussed in Kusiak (2017a).
+5.2 Special note
+The year 2017 marks publication of the 55th volume of the International Journal of Production Research (IJPR). The
+history of the journal dates to 1961, when it was launched by the Institution of Production Engineers with four issues
+published. No volume was published in 1962, rather Volume 2 of IJPR appeared in 1963.
+Subsequently Volume 25 with ten issues was published in 1987. This was the decade of ﬂexible automation that
+remains of interest to many companies and research groups to these days.
+Volume 50 with 24 issues appeared in 2012. Massive outsourcing and offshoring efforts dominated the manufactur-
+ing industry, lean production initiatives have blossomed and supply chain research was in a full swing.
+Recent years have brought a renewed interest in manufacturing. Volume 55 of 2017 marks the reversal of some of
+the manufacturing initiatives followed in the previous years, e.g. rather than the offshore manufacturing, reshoring is
+taking place. Energy, sustainability, big data and cybersecurity dominate the news. It is reasonable to assume that vol-
+umes 75 and 100 will be published in 2037 and 2062, respectively. The new research directions will likely be discussed
+in the papers to come.
+The Editorial published in the inaugural issue of the IJPR in 1961 presented a vision for the research to be dissemi-
+nated. It included keywords such as production process, production policy, planning and control, productivity measure-
+ments and technology. There should be no surprise that the keywords such as computers and artiﬁcial intelligence that
+are prominent today were not mentioned then as they were in their infancy. Later years have offered progress in manu-
+facturing technology, automation, computerisation, sensor proliferation, communication and cyber technologies that have
+made the manufacturing of today and shape the manufacturing of tomorrow.
+6. Conclusion
+Automated factories were envisioned and demonstrated decades ago. In general, the industry has retreated from pursuing
+the vision of total automation for valid business reasons. There is no doubt that some smart factories will be highly
+automated. However, smart manufacturing is not about the degree of automation of the manufacturing ﬂoor; it is about
+autonomy, evolution, simulation and optimisation of the manufacturing enterprise. The scope and time horizon of the
+simulation and optimisation will depend on the availability of data and tools. The level of ‘smartness’ of a manufactur-
+ing enterprise will be determined by the degree to which the physical enterprise has been reﬂected in the cyber space.
+This paper offers a vision of smart manufacturing. Its essence was encapsulated in six pillars differentiating it from
+the manufacturing as we know it. The pillars were supported with ten conjectures characterising smart manufacturing. A
+special anniversary note was included.
+International Journal of Production Research
+9
+
+--- Strana 11 ---
+Disclosure statement
+No potential conﬂict of interest was reported by the author.
+References
+Chun, Y., and B. Bidanda. 2013. “Sustainable Manufacturing and the Role of the International Journal of Production Research.”
+International Journal of Production Research 51 (23–24): 7448–7455.
+Cotrell, J., T. Stehly, J. Johnson, J. O. Roberts, Z. Parker, G. Scott, and D. Heimiller. 2014. Analysis of Transportation and Logistics
+Challenges Affecting the Deployment of Larger Wind Turbines: Summary of Results, US Department of Energy, Technical
+Report NREL/TP-5000-61063.
+Groumpos, P. P. 1995. “The Challenge of Intelligent Manufacturing Systems (IMS): The European IMS Information Event.” Journal
+of Intelligent Manufacturing 6 (1): 67–77.
+Helu, M., D. Libes, J. Lunell, K. Lyons, and K. C. Moris. 2016. “Enabling Smart Manufacturing Technologies for Decision-Making
+Support.” Proceedings of the ASME 2016 International Design Engineering Technical Conferences & Computers and Informa-
+tion in Engineering Conference IDETC/CIE, Charlotte, NC. 1–10. August 21–24.
+Ivanov, D., A. Dolgui, B. Sokolov, F. Werner, and M. Ivanova. 2016. “A Dynamic Model and an Algorithm for Short-term Supply
+Chain Scheduling in the Smart Factory Industry 4.0.” International Journal of Production Research 54 (2): 386–402.
+Kang, H. S., J. Y. Lee, S. S. Choi, H. Kim, J. H. Park, and J. Y. Son. 2016. “Smart Manufacturing: Past Research, Present Findings,
+and Future Directions.” International Journal of Precision Engineering and Manufacturing-Green Technology 3 (1): 111–128.
+Kim, Y.-H., and H.-B. Chang. 2014. “The Industrial Security Management Model for SMBs in Smart Work.” Journal of Intelligent
+Manufacturing 25 (2): 319–327.
+Kusiak, A. 1990a. “Editorial.” Journal of Intelligent Manufacturing 1 (1): 1.
+Kusiak, A. 1990b. Intelligent Manufacturing Systems. Englewood Cliffs, NJ: Prentice Hall.
+Kusiak, A. 2016a. “Put Innovation Science at the Heart of Discovery.” Nature 530 (7590): 255–255.
+Kusiak, A. 2016b. “Share Data on Wind Energy.” Nature 529 (7584): 19–21.
+Kusiak, A. 2017a. “A Four-part Plan for Smart Manufacturing.” ISE Magazine 49 (7): 43–47.
+Kusiak, A. 2017b. “Smart Manufacturing Must Embrace Big Data.” Nature 544 (7648): 23–25.
+Lu, Y., K. C. Morris, and S. Frechette. 2016. “Current Standards Landscape for Smart Manufacturing Systems, National Institute of
+Standards and Technology.” Report No. NISTIR 8107. doi:10.6028/NIST.IR.8107.
+Macke, N., S. Rulhoff, and J. Stjepandic. 2016. “Advances in Smart Manufacturing Change Management.” In Transdisciplinary Engi-
+neering: Crossing Boundaries, edited by M. Borsato, N. Wognum, M. Peruzzini, J. Stjepandić, and W. J. C. Verhagen, 318–
+328. IOS Press, (open access publication). doi:10.3233/978-1-61499-703-0-318.
+Moon, J.-Y., and J. Park. 2014. “Smart Production Scheduling with Time-dependent and Machine-dependent Electricity Cost by
+Considering Distributed Energy Resources and Energy Storage.” International Journal of Production Research 52 (13):
+3922–3939.
+O’Donovan, P., K. Bruton, and D. T. J. O’Sullivan. 2016. “Case Study: The Implementation of a Data-driven Industrial Analytics
+Methodology and Platform for Smart Manufacturing.” International Journal of Prognostics and Health Management 7: 1–21.
+Shaﬁq, S. I., C. Sanin, C. Toro, and E. Szczerbicki. 2015. “Virtual Engineering Object (VEO): Toward Experience-based Design and
+Manufacturing for Industry 4.0.” Cybernetics and Systems 46 (1–2): 35–50.
+Thoben, K.-D., S. Wiesner, and T. Wuest. 2017. “‘Industrie 4.0’ and Smart Manufacturing – A Review of Research Issues and Appli-
+cation Examples.” International Journal of Automation Technology 11 (1): 4–16.
+Zhang, L., Y.-L. Luo, F. Tao, B.-H. Li, L. Ren, and X. Zhang. 2014. “Cloud Manufacturing: A New Manufacturing Paradigm.” Enter-
+prise Information Systems 8 (2): 167–187.
+Zhong, R. Y., C. Xu, C. Chen, and G. Q. Huang. 2017. “Big Data Analytics for Physical Internet-based Intelligent Manufacturing
+Shop Floors.” International Journal of Production Research 55 (9): 2610–2621.
+10
+A. Kusiak

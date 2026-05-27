@@ -1,0 +1,518 @@
+
+--- Strana 1 ---
+Available online at www.sciencedirect.com
+ScienceDirect
+Energy Reports 8 (2022) 1219–1229
+www.elsevier.com/locate/egyr
+The 5th International Conference on Electrical Engineering and Green Energy, CEEGE 2022,
+8–11 June, Berlin, Germany
+A novel detection method for hot spots of photovoltaic (PV) panels
+using improved anchors and prediction heads of YOLOv5 network
+Tianyi Suna, Huishuang Xinga, Shengxian Caoa,∗, Yanhui Zhangb, Siyuan Fana, Peng Liua
+a School of Automation Engineering, Northeast Electric Power University, Jilin, 132012, China
+b Shenzhen Institute of Advanced Technology, Chinese Academy of Science, Shenzhen, 518055, China
+Received 25 July 2022; accepted 6 August 2022
+Available online 27 August 2022
+Abstract
+Accurate classification and detection of hot spots of photovoltaic (PV) panels can help guide operation and maintenance
+decisions, improve the power generation efficiency of the PV system, and ensure power stations’ safe and stable operation.
+Considering that, in this paper, the hot spots of PV panels collected on site are taken as the research object, and their formation
+mechanism is studied. Based on this, the morphological characteristics possessed by the hot spots of PV panels are classified
+into circular, linear, and array ones. A novel method for detecting hot spots of PV panels based on improved anchors and
+prediction heads of the YOLOv5 (AP-YOLOv5) network is proposed. Besides, to improve the detection precision of the
+YOLOv5 network at different scales in hot spots of PV panels, the K-means clustering algorithm is employed to cluster the
+length–width ratio of the data annotation frame, and a group of the anchors with smaller values is added so as to realize the
+detection of small targets by optimizing the cluster number. Apart from that, the corresponding prediction heads are constructed
+for the new anchor parameters to improve the detection precision concerning hot spots of PV panels. Furthermore, the model
+is verified by training experimental data and comparing test set results. The results showed that compared with other one-stage
+object detection models, the mean average precision (mAP) of the proposed network can achieve 87.8%, while the average
+recall rate is 89.0%, and the F1 score reaches 88.9%. In addition, the precision of this model is better than that of other models
+while maintaining a high frame rate; the frames per second (FPS) is as high as 98.6, thus laying a foundation for developing
+rapid detection tool of hot spots of PV panels, improving the safety of power station operation, and providing a method for
+intelligent operation and maintenance of PV power stations.
+© 2022 Published by Elsevier Ltd. This is an open access article under the CC BY-NC-ND license
+(http://creativecommons.org/licenses/by-nc-nd/4.0/).
+Peer-review under responsibility of the scientific committee of the 5th International Conference on Electrical Engineering and Green Energy, CEEGE,
+2022.
+Keywords: Photovoltaic panels; Hot spots of PV panels; Detection method; Computer vision; Image analysis
+1. Introduction
+As one of China’s leading power sources for achieving carbon neutrality, the photovoltaic (PV) industry will play
+a crucial role [1]. According to the future PV industry’s forecast development trend, China’s PV installed capacity
+∗Corresponding author.
+E-mail address:
+csxlb_jl@163.com (S. Cao).
+https://doi.org/10.1016/j.egyr.2022.08.130
+2352-4847/© 2022 Published by Elsevier Ltd. This is an open access article under the CC BY-NC-ND license (http://creativecommons.org/
+licenses/by-nc-nd/4.0/).
+Peer-review under responsibility of the scientific committee of the 5th International Conference on Electrical Engineering and Green Energy,
+CEEGE, 2022.
+
+--- Strana 2 ---
+T. Sun, H. Xing, S. Cao et al.
+Energy Reports 8 (2022) 1219–1229
+will stabilize at 403 GW in 2025 [2]. According to the International Energy Agency’s research on grid-connected
+PV power generation systems, the average annual performance ratio (PR) of PV power stations from 2000 to 2010
+was between 74% and 84%, and the PR loss rate was between 16% and 26%, among which the loss caused by
+the hot spots of PV panels effect accounted for about 5.77% [3]. At the same time, from the description of the hot
+spots of PV panels generation model, it can be seen that hot spots of PV panels not only affect the photoelectric
+efficiency conversion of the power generation system, but also cause irreversible damage to the battery, leading to
+the safety failure of the power station and resulting in serious economic losses [4,5]. In the past decades, detecting
+hot spots of PV panels in PV power stations entirely relies on manual experience. Due to the urgent requirements
+of the expansion and development of the PV market, experts and scholars at home and abroad have developed
+some automatic detection schemes and equipment, such as the I–V curve method [6], complex-total-cross-tied array
+(CTCT) structure method [7], and mathematical modeling method [8,9], which however usually require PV power
+stations to install special equipment. In this context, with the increase in PV system operation time, the demand for
+detecting hot spots of PV panels is increasingly prominent. On the one hand, with the increasing number and time
+of PV panel installation, more and more PV panels are featured with hot spot defects of various sizes. Therefore,
+a more accurate and timely detection system for hot spots of PV panels is urgently needed.
+Individuals have been trying to develop a detection system for hot spots of PV panels. Chiou et al. [10] pointed
+out the hidden crack defects of batteries caused by the detection method of hot spots in PV panels based on
+the infrared image, established the near-infrared (NIR) imaging system to capture images of the internal cracks,
+and developed a kind of regional growth defect detection algorithm to extract cracks from the captured image.
+However, this method requires high power, and it is not easy to guarantee the real-time and rapid detection. Wang
+et al. [11] carefully examined the local hot spots of PV panels by using xenon lamps to simulate solar radiation,
+detected and analyzed the electrical and thermal characteristics of the battery under different irradiation and surface
+conditions by using the electronic load and infrared thermal imager, and revealed the local hot spots of PV panels
+in the cell through experiments. Besides, the hot spot transient formation and change process caused by different
+mechanisms are discussed. However, there is no automatic identification, detection, and classification of hot spots of
+PV panels. Aghaei et al. [12] proposed a new method of planning and drawing PV power stations using digital image
+processing technology. Adopting the thermal imaging camera light unmanned aerial vehicle (UAV) system for aerial
+photography generates a lot of images after image stitching to describe the semantic image information, enrich and
+develop an image matching algorithm of digital image processing for analysis, implementation of PV components
+in the component list, and calculation about the total number of defects and health components; however, there is
+no fine classification and complete discussion about hot spots of PV panels.
+It is noteworthy that early target recognition and detection are mainly based on traditional machine vision
+methods, while with the rapid development of modern computer science, the convolutional neural network (CNN)
+has more advantages in dealing with multi-object image detection problems with complex environmental states and
+variable detection parameters [13,14]. At present, the CNN has been widely used in image target recognition and
+detection in large-scale production environments, such as transportation, industry, agriculture, and breeding [15].
+Yang et al. [16] put forward a crack detection transfer learning method based on the dynamic convolution neural
+network (DCNN) and applied it to crack detection of bridges, highways, and other infrastructure. [17] adopted
+image-based algorithms to realize image fire detection. Therefore, it can be seen that due to the superiority of the
+convolutional neural network in multi-object image detection, it gradually becomes a popular detection method in
+various fields.
+This study aims to develop a more accurate method of detecting the hot spots in PV panels. A novel method
+for detecting the hot spots of PV panels based on improved anchors and prediction heads of the YOLOv5 (AP-
+YOLOv5) network is proposed in this work. This model is a detection method for hot spots of PV panels based
+on the latest generation of the one-stage object detection YOLOv5 network, which is improved to achieve rapid
+detection and accurate classification of hot spots in PV panels. In order to provide a reliable basis for the operation
+and maintenance of PV power stations, in this study, the hot spots of PV panels are accurately classified, and their
+formation mechanism is also researched. In this case, the classification concerning the hot spots of PV panels is
+achieved. Apart from that, for the purpose of accurately identifying the small size hot spots of PV panels, the
+K-means method is used to cluster the length to width ratio of the labeling frame belonging to the hot spots of
+PV panels in this paper, so as to conduct optimized anchor research, further improve the network structure of the
+YOLOv5 network, enhance the prediction heads, and realize the identification and detection of the hot spots in PV
+1220
+
+--- Strana 3 ---
+T. Sun, H. Xing, S. Cao et al.
+Energy Reports 8 (2022) 1219–1229
+panels. Moreover, the content of this paper is organized as follows. The formation mechanism and classification of
+the hot spots in PV panels are introduced in Section 2. Section 3 describes improvements, including the model
+flow and the AP-YOLOv5 network architecture. Section 4 presents the preparation and training results of the
+experiment, such as the detection results and the comparison between different models. Conclusions and future
+work are discussed in Section 5.
+2. Problem description
+2.1. Formation mechanism of hot spots in PV panels
+The hot spots are prevalent in PV panels in operation. In order to provide theoretical support for PV operation
+and maintenance, this study first researched the formation mechanism of hot spots of PV panels and provided a
+theoretical basis for the classification of hot spots in PV panels. The formation process of hot spots in PV panels is
+shown in Fig. 1. After the PV panels are partially blocked, they cannot absorb light energy normally, thus blocking
+the photoelectric effect of silicon semiconductors. Through the power consumption parts (internal resistance), the
+current will generate heat, and the battery, after a long time shielding, completes the accumulation of heat to form
+hot spots of PV panels.
+Fig. 1. Formation process of hot spots of PV panels.
+Therefore, it can be analyzed that once the PV cell unit generates hot spot defects in the working state, the fault
+area will appear in a short period, which will eventually lead to the burning of the cell and the stopping of the
+power supply of the whole battery string, affecting the safe operation of the PV module, and even triggering a fire.
+2.2. Classification of hot spots in PV panels
+Through the research on the formation mechanism of hot spots of PV panels, it can be found that hot spots of
+PV panels are usually formed due to local occlusion, and the operation process of PV panels is affected by the
+natural environment and components themselves. By inductive analysis, hot spots of PV panels can be divided into
+three classes in shape: round, linear, and square ones, which can represent various hot spots of PV panels common
+in the field operation of PV power stations. Fig. 2 shows the three typical types of hot spots in PV panels. To
+improve the pertinence of hot spot detection in the PV panels, according to their characteristics formed by different
+fault types, the hot spots of PV panels are classified into round, linear, and square forms. Fig. 2(a), (b), and (c)
+respectively display the infrared images of PV panels with three types of hot spots obtained by thermal-imaging
+equipment. The study on the types of hot spots in PV panels and their causes will help diagnose the failure types of
+PV panels accurately and effectively, thus implementing further operation and maintenance measures. By analyzing
+1221
+
+--- Strana 4 ---
+T. Sun, H. Xing, S. Cao et al.
+Energy Reports 8 (2022) 1219–1229
+Fig. 2. Three typical hot spots of PV panels.
+the thermal imaging images concerning these three types of hot spots of PV panels, it is found that the dotted hot
+spots of PV panels are primarily round spots or abnormal hot regions with small lines.
+These small round hot spots of PV panels are mostly formed by abnormal heat at the power cord junction and
+long-term leaf hot spot occlusion, which is easy to eliminate the hot spots of PV panels. The linear hot spots of PV
+panels are radioactive strips caused by a mixture of bird droppings, dust, and rain, while lines with high similarity
+to the silver grid of PV panels. This occlusion is difficult to detect through visible images, but it has more apparent
+characteristic structure features under thermal imaging images, which is an approximately linear contour and is
+challenging regarding eliminating hot spots of PV panels. Furthermore, the array hot spots of PV panels are caused
+by a single internal defect of PV panels or multiple-panel failures in series and parallel, and its structure is featured
+with scattered or clustered square shape. Such hot spots of PV panels are huge hidden dangers for the power
+generation efficiency and safe operation of PV power stations, and belong to serious hot spots of PV panels that
+cannot be eliminated. As the cause is the defect of the internal component unit, the PV panels under natural light
+are the same as those under a normal working state. In order to effectively identify hot spots of PV panels, it is
+necessary to analyze the characteristics of thermal-imaging images. Table 1 displays the types and causes of hot
+spots in PV panels.
+Table 1. Types and causes of hot spots in PV panels for PV.
+Hot spot type
+Hot spots
+shape class
+Formation cause analysis
+Structural features
+Influence level
+of hotspot
+Detection
+difficulty
+Dot hot spots
+of PV panels
+round
+Abnormal heat at the power
+cord junction and long-term
+leaf hot spots of PV panels
+An approximately circular
+area, approximately 3–6 cm
+in diameter
+Class I
+(easy to
+remove)
+Easy to
+eliminate
+Linear hot
+spots of PV
+panels
+linear
+Being mainly caused by the
+mixture of bird droppings,
+dust and rain
+The area of lines: 10 to
+25 cm in length and less
+than 3 cm in width
+Class II
+(difficult to
+remove)
+Difficult to
+detect through
+visible images
+Hot spots of
+PV panels
+array
+square
+PV panel single internal
+defects or multiple panel
+failures in series and parallel
+10*10*N (10*10 is the area
+of a single faulty battery
+module, and N refers to the
+number of faulty battery
+panels)
+Class III
+(unable to
+remove)
+Serious and
+cannot be
+eliminated
+3. Methodology
+3.1. AP-YOLOv5 network
+3.1.1. Network structure
+The YOLOv5 network tends to optimize the speed and precision of real-time target detection based on the
+YOLOv4 network, and consists of several important panels, such as Focus, CSP, SPPNet, Panet, and prediction
+heads, which constitute the network backbone structure. This paper optimizes the profile of small targets for the
+YOLOv5 network target detection framework. Modify the initial anchors, increase the prediction heads, and improve
+the network’s ability to detect small target objects by constructing large-scale feature images. The contributions of
+1222
+
+--- Strana 5 ---
+T. Sun, H. Xing, S. Cao et al.
+Energy Reports 8 (2022) 1219–1229
+Fig. 3. The AP-YOLOv5 network structure.
+the AP-YOLOv5 network structure to this paper are shown in Fig. 3: CSP is a cross-stage local network, which is
+used to aggregate and form image features on different image fine-grained convolutional neural networks for further
+controlling network depth. Different from the YOLOv4 network, there are two CSP structures in the AP-YOLOv5
+network structure, CSP1 and CSP2, when the former is mainly used in the Backbone, and the latter is mainly
+adopted in the Neck. Compared with the YOLOv5 network, the AP-YOLOv5 network outputs four output feature
+maps of different sizes.
+Four different weight files are obtained after training the AP-YOLOv5 network, corresponding to four network
+models, namely AP-YOLOv5s, AP-YOLOv5 m, AP-YOLOv5l, and AP-YOLOv5x, respectively. The network
+structure’s Focus, Library, SPPNet, Panet, and prediction heads are the same. The AP-YOLOv5s network is the
+network with the smallest depth and width in the feature graph. On this basis, the other three networks are obtained
+by referring to the parameters shown in Table 2. In the AP-YOLOv5 network, with the deepening of the network, the
+number of convolutional kernels increases, and the learning ability of network feature extraction becomes stronger.
+Table 2. Number of convolution kernels of AP-YOLOv5 network.
+Number of
+convolution kernels
+AP-
+YOLOv5s
+AP-
+YOLOv5 m
+AP-
+YOLOv5l
+AP-
+YOLOv5x
+(1)
+32
+48
+64
+80
+(2)
+64
+96
+128
+160
+(3)
+128
+192
+256
+320
+(4)
+256
+384
+512
+640
+(5)
+512
+768
+1024
+1280
+3.1.2. Anchor optimization
+Anchors are the benchmark that the algorithm uses to predict the bounding box, and choosing the priori box
+with the most appropriate size will reduce the difficulty of training. There is an obvious difference between the
+shape of the test object and the initial value in the PV panel hot spot data, and small-scale dense objects such as
+bird droppings and fallen leaves also exist. Besides, it is not easy to achieve satisfactory precision by directly using
+the initial anchor value. Here, it should be mentioned that, this study tended to find anchor parameters suitable for
+the PV panel hot spot detection task, and then use a feature map with more information about the tiny target to
+detect the small target. By employing K-means clustering data, a length–width ratio of frame annotation, and by
+modifying the cluster number, a group of anchors with the small value are added for meeting the detection of small
+targets. Moreover, the following four groups of 12 prior frames were obtained according to the characteristics of
+the detected category object, as Fig. 4 shown, and they were (18*23), (28*19), (13*39), (22*30), (37*31), (14*95),
+(68*25), (59*43), (23*117), (86*37), (22*220), and (198*45). In addition, using the K-means clustering method to
+1223
+
+--- Strana 6 ---
+T. Sun, H. Xing, S. Cao et al.
+Energy Reports 8 (2022) 1219–1229
+Fig. 4. The original and improved anchors.
+generate the shape and size that most frequently appear in the hot spots of PV panels, the means average precision
+(mAP) of model detection can be improved, and the possibility of blind search can be reduced during model learning,
+which is conducive to fast model convergence.
+3.1.3. Dding the prediction heads
+Each set of anchors represents a different feature diagram. The top part of Fig. 4 is the initialized YOLOv5
+network with the three sets of initialized anchors and their corresponding schematic, and the bottom part is the four
+sets of clustered AP-YOLOv5 network anchors. When the input image size is 640*640, the first line is the anchor
+frame on the added maximum feature graph, and the corresponding detection layer size is 160*160, which can be
+used to detect small target objects (4*4). Besides, this layer possesses the unique structure of the AP-YOLOv5
+network. The anchor frame on the feature map in the middle corresponding to the second and third lines has a
+detection layer size of 80*80 and 40*40, respectively, which can be adopted to detect medium-sized targets with
+a size above 8*8 and 16*16 scales. Furthermore, the fourth line is the anchor frame on the smallest feature map,
+and the corresponding detection layer size is 20*20, which can be employed to detect large targets above 32*32.
+There are only three sets of anchors initialized, and the corresponding YOLOv5 network has only three prediction
+heads. After clustering optimization, a set of small target anchors has been added, and accordingly, a small target
+detection layer needs to be added to the prediction heads. As shown in Fig. 3, after the network enters the sampling
+layer for the first time, the feature graph continues to be up-sampled, making the feature graph continue to expand.
+At the same time, at the second CSP1 3 layer, the feature map of 160*160 obtained from up-sampling is concat
+fused with the feature map of the backbone network to obtain a larger feature map for small target detection. Finally,
+a small target detection layer of 160*160*255 is added to the prediction heads. Moreover, the modified network
+uses four prediction heads for detection, with dimensions corresponding to 160*160*255, 80*80*255, 40*40*255,
+and 20*20*255, respectively. The small target prediction heads with 160*160 prediction heads are more suitable
+for the actual demand of PV component hot spot detection, which is conducive to identifying different types of hot
+spots of PV panels accurately.
+3.2. Evaluation metrics
+In order to evaluate the predictive performance of different models, precision, recall, F1, and mean average
+precision (mAP), were used to evaluate and compare the training results of different models [18].
+precision =
+T P
+T P + F P
+(1)
+recall =
+T P
+T P + F N
+(2)
+1224
+
+--- Strana 7 ---
+T. Sun, H. Xing, S. Cao et al.
+Energy Reports 8 (2022) 1219–1229
+F1 = 2 × precision × recall
+precision + recall
+(3)
+AP =
+∫1
+0
+p(r)dr
+(4)
+m AP = 1
+N
+∑
+APi
+(5)
+In the formula, TP denotes the true positive; FP indicates the false positive; FN refers to the false negative; N
+means the number of objects in all classes; F1 represents the indicator for evaluating the performance balance of
+the model; AP signifies the average precision for each object class, while mAP is means average precision, which
+is the average of average precision (AP) for each object class.
+4. Results
+In this study, to achieve high-precision real-time detection of the hot spots in PV panels, anchors were optimized
+in the YOLOv5 network backbone, and the corresponding President layer was constructed. Besides, customized
+image data sets were used for training and testing, while the prediction performance of the YOLOv5 network, SSD
+model, and optimized AP-YOLOv5 network was evaluated by training the YOLOv5 model and SSD model as the
+control group.
+4.1. Data preparation
+An image dataset was established in this study to train and verify the AP-YOLOv5 network. There are three
+classifications in this data set: round, linear, and square ones. These images were collected from the site of the
+PV power station and the setup test stand. In order to avoid over-fitting in training, image enhancement such as
+inversion, contrast, rotation shift, and CutMix was carried out on the data set.
+To train the AP-YOLOv5 network, the image data first should be manually labeled. Then, the labeled images can
+be used as ground truth and can be compared with the predicted results generated by the training model to evaluate
+the precision of training. Other than that, using the popular annotation tool Labelme [19], a total of 1000 images
+have been tagged. Afterwards, the dataset was randomly divided into two groups, one group using 800 images for
+training and the other group using 200 images for verification.
+4.2. Training and validation
+The software and hardware tools involved in model training and test experiments in this paper are as follows:
+CPU — Xeon E5-2630, GPU — NVIDIA Quadro2000, Memory — 64 GB, System — Windows Server 2012r2,
+Development environment torch1.6.0.According to server memory and graphics card configuration, the experimental
+parameter setting method is as follows: the small-batch gradient descent method is iterated 500 times, with the
+momentum set to 0.9, learning rate to 0.01, weight attenuation rate to 0.001, and batch size to 8. Besides, other
+parameters are the original parameters of the YOLOv5 model.
+4.3. Comparison with other models
+The SSD network is introduced for comparing the algorithm model better suitable for detecting the hot spots of
+PV panels. Like the YOLOv5 network, the SSD network belongs to the one-stage object detection model, which can
+directly generate the object’s category probability and position coordinate value. The final detection result can be
+directly obtained through a single detection. Besides, in Fig. 5, precision(a), recall(b), mAP@.5(c), mAP@0.95(d),
+and loss(e) of the YOLOv5 network, SSD network, and AP-YOLOv5 network are compared.
+Precision is the ratio of positive network predictions to positive network predictions, and Recall is the ratio of
+positive network predictions to positive network predictions. It can be seen from Fig. 5(a) and (b) that the AP-
+YOLOv5 network witnesses a great improvement in recall rate and precision rate, especially in the detection of
+small linear targets, where the precision and recall rate have increased by 0.34 and 0.224, accordingly.
+1225
+
+--- Strana 8 ---
+T. Sun, H. Xing, S. Cao et al.
+Energy Reports 8 (2022) 1219–1229
+Fig. 5. Performance comparison of YOLOv5 network, SSD network, and AP-YOLOv5 network.
+The loss function is taken to evaluate the difference between the predicted value and the true value of the model.
+Since the validation set is also defined as a test set, the validation loss may be more reliable than the training
+loss when predicting the performance of different models. Fig. 5(e) shows the result curves of the validation set
+loss trained by three deep learning algorithms on the data set concerning the hot spots of PV panels. Beyond that,
+it can be seen from the figure that among the three models, the AP-YOLOv5 network is characterized with the
+lowest training loss. Generally, lower losses indicate better training results. Combined with the results in Fig. 5, it
+can be roughly concluded that the AP-YOLOv5 network ranks first in all indicators. Under the same data set, the
+AP-YOLOv5 network has the fastest convergence speed and the slightest error, indicating that the performance of
+the AP-YOLOv5 network is better than that of other models.
+To further verify the detection performance of the improved network, the YOLOv5 network, YOLOv4 network
+and YOLOv3 network are selected for comparison with the series of tests, and the performance of different series
+is compared with that of the Faster R-CNN network and SSD network. Then, the detection results of different
+networks are shown in Fig. 6. The Faster-RCNN network has the worst performance in the hot spot detection tasks.
+Its precision was only 47.5%, especially 32.6% for hot spots of PV panels. In terms of recall rate, it was only
+54% and 33.4% for the hot spots of PV panels. In addition, the detection speed of the Faster R-CNN network was
+only 17.3 FPS among all algorithm models in Fig. 7, manifesting that it is not competent for the field detection
+task of PV panel hot spots of PV panels. As for the index value of the SSD network, it can be found that the
+mAP@0.5 value of the SSD network is higher than 81.7%, 14.5% higher than that of the YOLOv5 network, but
+6.1% lower than that of the AP-YOLOv5 network which is 87.8%. Besides, other indicators are far behind those of
+the AP-YOLOv5 network. For example, the SSD achieved 59.4% precision and 61.1% recall rate, 26.9% and 25.9%
+less than their AP-YOLOv5 network counterparts. These values are significantly lower than the relative values of
+YOLO series detectors, reflecting that the AP-YOLOv5 network is more suitable for dealing with the PV panel hot
+spot detection task than the SSD network.
+1226
+
+--- Strana 9 ---
+T. Sun, H. Xing, S. Cao et al.
+Energy Reports 8 (2022) 1219–1229
+Fig. 6. Detection results of different networks.
+Fig. 7. Actual detection results of YOLOv5 network and AP-YOLOv5 networks.
+4.4. Comprehensive evaluation
+Based on the above experimental results, it can be seen that the AP-YOLOv5 network performs better than the
+YOLOv5 network, and the average precision of recognition, average recall rate, and other performance indicators
+have increased dramatically, especially for the recognition task with small targets. Therefore, it is correct and
+reasonable to adopt the anchor prior frame adapting to hot spot samples and enhance network detection layers
+to improve the detection ability of small network targets. Therefore, it can be concluded that the AP-YOLOv5
+network has the best comprehensive performance in the PV panel hot spot detection task, and its detection results
+are 87.8% average accuracy, 89.0% average recall rate, 88.9% F1 score and 98.6 FPS, which meet the requirements
+of the hot spot detection.
+Fig. 7 displays the results of the YOLOv5 network and AP-YOLOv5 network in actual testing. The first row
+shows the actual location and type of hot spots of PV panels. The second row is the detection result and precision of
+the YOLOv5 network. Thus, it can be observed that the detection precision of the original model for small targets
+is low. The third row is the detection of the AP-YOLOv5 network. It is not difficult to see that the AP-YOLOv5
+network has higher detection precision for both large-scale and small-scale targets, which means more reliable
+1227
+
+--- Strana 10 ---
+T. Sun, H. Xing, S. Cao et al.
+Energy Reports 8 (2022) 1219–1229
+detection results in actual testing. The higher the detection precision is, the more conducive to engineering practice
+it is.
+5. Conclusions and future work
+In this study, a real-time detection framework for the PV panel hot spot type is proposed. Studying the mechanism
+concerning the hot spots of PV panels aims to help PV power stations improve the efficiency and precision of their
+detection, provide a basis for operation and maintenance decision making, and ensure the safe and stable operation of
+power stations. The proposed detection model is based on the YOLOv5 network, the recently published one-stage
+object detection network. The K-means method is also adopted to cluster the length–width ratio of the standard
+frame of data, optimize the original anchor parameters of the backbone network, expand the small target detection
+anchors, and add the Prediction Head layer to the backbone network. A total of 1000 images, including circular,
+linear, and array hot spots of PV panels, were used for training and verification. Besides, the improved model and
+the original YOLOv5 network were trained and evaluated on various scales based on Precision, Recall, and mAP.
+Furthermore, to verify the validity of the model, the same series of tests were compared with the YOLOv5 network,
+YOLOv4 network, and YOLOv3 network, and the performance of different series was compared with that of the
+Faster R-CNN network and SSD network. The experimental results show that the AP-YOLOv5 network proposed
+in this study is superior to other models in mAP (87.8%), average recall rate (89.0%), and F1 score (88.9%) while
+ensuring a high frame rate (98.6). Apart from that, better detection performance in field practice is demonstrated,
+and the experimental results reveal that the AP-YOLOv5 network is capable of detecting the hot spots of PV panels.
+This is the first attempt of the improved YOLOv5 network in the classification and detection of the hot spots in
+PV panels. This study demonstrates the possibility of applying cutting-edge deep learning techniques to the field
+application of PV power plants. However, there is still room for improvement in PV panel hot spot detection, such as
+frame rate. Considering that, future work will optimize detection speed and accuracy, reduce computational power
+requirements, and provide more possibilities for portable field detection.
+Declaration of competing interest
+The authors declare that they have no known competing financial interests or personal relationships that could
+have appeared to influence the work reported in this paper.
+Data availability
+The authors do not have permission to share data.
+Acknowledgments
+This work was supported by the National Key R&D Program of China (Grant No. 2018YFB1500800),
+the Science and Technology Development Program of Jilin Province, China (Grant No. 20190302079GX and
+20190201098JC), and the Science and Technology Project of State Grid Corporation of China (Grant No.
+SGTJDK00DYJS2000148).
+References
+[1] Xin-gang Z, Wei W, Ling W. A dynamic analysis of research and development incentive on China’s photovoltaic industry based on
+system dynamics model. Energy 2021;233:121141, 2021.
+[2] Luo Z, He J, Hu S. Driving force model to evaluate China’s photovoltaic industry: Historical and future trends. J Clean Prod
+2021;311:127637, 2021.
+[3] Dhimish M. Thermal impact on the performance ratio of photovoltaic systems: A case study of 8000 photovoltaic installations. Case
+Stud Therm Eng 2020;21:100693, 2020.
+[4] Kim Y, Shin M, Lee MJ, Kang Y. Hot-spot generation model using electrical and thermal equivalent circuits for a copper indium
+gallium selenide photovoltaic module. Sol Energy 2021;216:377–85, 2021.
+[5] Dhimish M. Defining the best-fit machine learning classifier to early diagnose photovoltaic solar cells hot-spots. Case Stud Therm Eng
+2021;25:100980, 2021.
+[6] Dhimish M, Holmes V, Mehrdadi B, Dales M, Mather P. PV output power enhancement using two mitigation techniques for hot spots
+and partially shaded solar cells. Electr Power Syst Res 2018;158:15–25, 2018.
+1228
+
+--- Strana 11 ---
+T. Sun, H. Xing, S. Cao et al.
+Energy Reports 8 (2022) 1219–1229
+[7] Liu Y, Li B, Zhong D. Research on domestic PV module structure based on fault detection. In: 2010 8th World congress on intelligent
+control and automation. 2010, p. 171–5, 2010.
+[8] Ramos-Paj C, Bastida J, Saavedra-Monte A, Guinjoan-Gispert F, Goez M. Mathematica model of total cross tied PV arrays in
+mismatching conditions. In: 4th Colombian workshop on circuits and systems. 2012, 2012.
+[9] Fan S, Wang Y, Cao S, Sun T, Liu P. A novel method for analyzing the effect of dust accumulation on energy efficiency loss in
+photovoltaic (PV) system. Energy 2021;234:121112, 2021.
+[10] Chiou Y, Liu J, Liang Y. Micro crack detection of multi-crystalline silicon solar wafer using machine vision techniques. Sensor Rev
+2011;31(2):154–65, 2011.
+[11] Wang A, Xuan Y. Close examination of localized hot spots within photovoltaic modules. Energy Convers Manage 2021;234:113959,
+2021.
+[12] Aghaei M, Leva S, Grimaccia F. PV power plant inspection by image mosaicing techniques for IR real-time images. In: 2016 IEEE
+43rd photovoltaic specialists conference. 2016, p. 3100–5, 2016.
+[13] Girshick R, Donahue J, Darrell T, Malik J. Rich feature hierarchies for accurate object detection and semantic segmentation. In: 2014
+IEEE conference on computer vision and pattern recognition. 2014, p. 580–7, 2014.
+[14] Ren S, He K, Girshick R, Sun J. Faster r-cnn: Towards real-time object detection with region proposal networks. IEEE Trans Pattern
+Anal Mach Intell 2017;39(6):1137–49, 2017.
+[15] He K, Zhang X, Ren S, Sun J. Spatial pyramid pooling in deep convolutional networks for visual recognition. IEEE Trans Pattern
+Anal Mach Intell 2015;37(9):1904–16, 2015.
+[16] Yang Q, Shi W, Chen J, Lin W. Deep convolution neural network-based transfer learning method for civil infrastructure crack detection.
+Autom Constr 2020;116:103199, 2020.
+[17] Li P, Zhao W. Image fire detection algorithms based on convolutional neural networks. Case Stud Therm Eng 2020;19:100625, 2020.
+[18] Guo F, Qian Y, Shi Y. Real-time railroad track components inspection based on the improved YOLOv4 framework. Autom Constr
+2021;125:103596, 2021.
+[19] Torralba A, Russell B, Yuen J. Labelme: Online image annotation and applications. Proc IEEE 2010;98(8):1467–84, 2010.
+1229

@@ -1,0 +1,1187 @@
+
+--- Strana 1 ---
+Research Article
+Automatic Fabric Defect Detection Based on an
+Improved YOLOv5
+Rui Jin
+1,2 and Qiang Niu
+1
+1School of Computer Science and Technology, China University of Mining and Technology, Xuzhou, China
+2Changzhou Vocational Institute of Textile and Garment, Changzhou, China
+Correspondence should be addressed to Qiang Niu; niuq@cumt.edu.cn
+Received 7 August 2021; Revised 6 September 2021; Accepted 9 September 2021; Published 30 September 2021
+Academic Editor: Paolo Spagnolo
+Copyright © 2021 Rui Jin and Qiang Niu. Tis is an open access article distributed under the Creative Commons Attribution
+License, which permits unrestricted use, distribution, and reproduction in any medium, provided the original work is
+properly cited.
+Fabric defect detection is particularly remarkable because of the large textile production demand in China. Traditional manual
+detection method is ineﬃcient, time-consuming, laborious, and costly. A deep learning technique is proposed in this work to
+perform automatic fabric defect detection by improving a YOLOv5 object detection algorithm. A teacher-student architecture is
+used to handle the shortage of fabric defect images. Speciﬁcally, a deep teacher network could precisely recognize fabric defects.
+After information distillation, a shallow student network could do the same thing in real-time with minimal performance
+degeneration. Moreover, multitask learning is introduced by simultaneously detecting ubiquitous and speciﬁc defects. Focal loss
+function and central constraints are introduced to improve the recognition performance. Evaluations are performed on the
+publicly available Tianchi AI and TILDA databases. Results indicate that the proposed method performs well compared with other
+methods and has excellent defect detection ability in the collected textile images.
+1. Introduction
+Te textile industry is the traditional advantageous industry in
+China’s economic development and is an important liveli-
+hood industry. Te quality of textiles has a great inﬂuence on
+the textile industry. Fabric defects would reduce the cost and
+proﬁt by 45%–65% [1]. Terefore, defect detection plays an
+important role in the control of textile quality. Traditional
+textile defect testing is usually achieved by training skilled
+operators with high training costs, and the manual detection
+eﬃciency is low (the detection speed is less than 20 m/min).
+Te error and leakage rates are high due to personnel fatigue
+or other subjective factors. Hence, how to detect fabric defects
+by automatic means has become an engaging, diﬃcult re-
+search spot in the ﬁeld of textile industry and machine vision.
+Te core of machine-vision-based fabric defect detection
+is extracting the characteristics related to defects from the
+textile images. A detailed review of the machine-vision-based
+fabric defect detection methods could be found in References
+[2, 3]. Tomas and Cattoen [4] used the gray-scale means of
+image rows and columns as defect-related characteristics,
+which are sensitive to illumination changes. Ye [5] presented
+the fuzzy inference based on image histogram statistical
+variables, which is robust to defects’ rotation and translation.
+However, handling complex image texture is diﬃcult. For
+complex texture images, researchers proposed methods based
+on edges [6], local binary patterns [7, 8], contour waves [9],
+and gray co-occurrence matrix [10, 11]. Tese methods
+perform well in identifying defective images but have diﬃ-
+culty recognizing speciﬁc fabric defects. Moreover, several
+researchers used the characteristics of the high-frequency
+parts, such as Fourier transform methods [12, 13], Gabor ﬁlter
+methods [7, 14], and wavelet transform methods [15, 16].
+Compared with fabric defect detection in the spatial domain,
+it has more space-time overheads in the frequency domain.
+Deep learning has been widely used in the ﬁelds of
+computer vision [17–19]. Researchers designed deep
+neural networks to realize fabric defect detection in a
+data-driven manner. Liu et al. [20] proposed using
+multistage GAN the detection of fabric defects through
+unsupervised data reconstruction. Hence, it could over-
+come the challenges of diversiﬁed fabric defects. Mei et al.
+Hindawi
+Mathematical Problems in Engineering
+Volume 2021, Article ID 7321394, 13 pages
+https://doi.org/10.1155/2021/7321394
+
+--- Strana 2 ---
+[21] introduced a multiscale convolutional denoising
+autoencoder to learn the reconstruction of textile images.
+Te reconstruction errors are utilized to realize automatic
+defect detection. Xian et al. [22] studied the problem of
+metallic surface defect detection that is similar to fabric
+defect detection. Convolutional neural network-based
+segmentation is used to detect and recognize defect re-
+gions. Wei et al. [23] used faster-RCNN to detect fabric
+defects automatically. It achieves satisﬁed detection
+performance beneﬁting from faster-RCNN’s strong fea-
+ture engineering ability. However, faster-RCNN has large
+space-time complexity due to its two-stage object de-
+tection scheme. Jing et al. [24] improved YOLOv3, which
+is a single-stage object detection method with real-time
+detection performance. Ten, it could better detect fabric
+defects.
+In addition, several researchers studied the model-driven
+fabric defect detection methods, such as Markov random
+ﬁeld [25], autoregression [26], and sparse dictionary [27, 28].
+After eﬀective training, these methods could identify small-
+region defects. However, they are vulnerable to external
+signals such as noise and light.
+In conclusion, many researchers have proposed diﬀerent
+methods to study how to detect fabric defects. However,
+detecting fabric defects is still challenging owing to many
+kinds of defects with large diﬀerences and uneven distri-
+butions. Tese problems lead to the diﬃculty of designing an
+eﬀective system to detect and localize the fabric defects
+automatically. Moreover, the proposed system is required to
+operate faster and could be realized in an intelligent edge
+device platform.
+According to the above requirements, a lightweight
+fabric defect detection method is proposed by improving
+YOLOv5 [29] based on the special needs of the defect de-
+tection system. It could detect and recognize special fabric
+defects in real time. Te main contributions of this article are
+as follows.
+A teacher-student architecture is introduced to detect
+fabric defects. Te deep teacher network could precisely
+recognize fabric defects. After information distillation, a
+shallow student network could do the same thing in real time
+with minimal performance degeneration. Te student net-
+work could be deployed in the edge equipment because of its
+low space-time overheads.
+To solve the problems of many kinds of fabric defects
+that are diﬃcult to be distinguished, a multitask learning
+strategy is proposed to detect ubiquitous and speciﬁc defects
+simultaneously. Such a strategy could fully utilize the
+complementary between ubiquitous and speciﬁc defects.
+Moreover, an attention mechanism is used to enhance the
+defect-related features.
+To handle data imbalance and small-region defects
+better, the focal loss function [30] is employed to mitigate
+data imbalance. Te center loss is introduced as a constraint
+to increase the interclass distance while reducing the
+intraclass distance, hence improving the recognition per-
+formance of speciﬁc defects.
+Te proposed method is evaluated on the publicly
+available Tianchi AI and TILDA databases. Te results reveal
+its ability to detect and recognize speciﬁc fabric defects. To
+verify the generalization capability of the proposed algo-
+rithm, it is tested on self-collected fabric defect images and
+achieves good results.
+2. Related Technologies
+2.1. Convolutional Neural Networks. Convolutional neural
+networks (CNNs) are widely used in computer vision tasks
+[31]. CNN is a kind of feed-forward neural network that
+contains convolutional computation and deep structure. It
+has the representation learning ability to learn structured
+and translation-invariant information from input images.
+Compared with fully connected operations, CNN has the
+advantage of small computational overhead. A common
+CNN-based computer vision system consists of the fol-
+lowing parts:
+Input layer: it performs gray processing, normalization,
+and data augmentation on the input images.
+Convolutional layer: it performs convolutional opera-
+tions in each layer to ensure the forward and backward
+transmission of the information. Te feature map of the lth
+layer is derived from that of the l−1th layer using the
+convolutional operation, as follows:
+yl(i,j)  Kl
+i ∗xl rj
+( ),
+(1)
+where Kl
+i is the weight of ith convolutional kernel in the lth
+layer, and xl(rj) represents the jth local region being cal-
+culated in the lth layer.
+Activation layer: it always follows the convolutional layer
+to introduce nonlinearity. Hence, the network could have
+better representation learning ability. Commonly used ac-
+tivation functions contain Sigmoid, Tanh, ReLu, and their
+variants. Figure 1 shows the curves of three diﬀerent acti-
+vation functions.
+(1) Pooling layer: it is used to subsample the feature
+maps to decrease computational overheads. It could
+also mitigate the overﬁtting phenomenon. Com-
+monly used pooling functions consist of the average
+and maximum pooling strategies.
+(2) Output layer: it presents various structures according
+to diﬀerent computer vision applications. For clas-
+siﬁcation tasks, the SoftMax function is often used in
+the output layer to calculate the probability that the
+input belongs to each category, thus obtaining the
+classiﬁcation results.
+Te ﬁve components above are used in the improved
+YOLOv5. Tey would not be introduced in detail in the
+following sections.
+2.2. Object Detection Algorithm. Object detection is one of
+the essential issues in the ﬁeld of computer vision. It enables
+the computer to discover and locate targets of interest from
+images automatically, such as ﬂaws in the fabric. Deep
+learning-based object detection algorithms have achieved
+great successes recently. Commonly used methods include
+RCNN [32], fast-RCNN [33], faster-RCNN [34], SDD [35],
+2
+Mathematical Problems in Engineering
+
+--- Strana 3 ---
+and YOLO [36]. However, the above methods have diﬃculty
+meeting the real-time requirements of the fabric defect
+detection system because they have high computational
+overheads. To balance precision and speed, a lightweight
+object detection network, named YOLOv5, is used in this
+work. Te traditional YOLOv5 is improved based on the
+characteristics of the fabric defects, such that it can be
+applied to the fabric defect detection system.
+Figure 2 demonstrates the structure of the traditional
+YOLOv5, which mainly includes Bakbone, PANet, and
+Output. Bakbone is used to perform feature engineering
+from input images. PANet could obtain visual features
+robust to scale changes due to the used pyramid structure.
+Te positions are output, and the regions of interest are
+classiﬁed simultaneously. Assuming the input image size as
+608 ∗608 ∗3 (height ∗width ∗channels), the Output
+part could output three diﬀerent scales of features with
+dimensions
+of
+76 ∗76 ∗255,
+38 ∗38 ∗255,
+and
+19 ∗19 ∗255. Speciﬁc details of the YOLOv5 network
+could be found in [29].
+2.3. Attention Mechanism. Te attention mechanism draws
+on human’s selective attention characteristic. Speciﬁcally, a
+human being could quickly scan the global image and
+concentrate on the regions of interest. Ten, detail infor-
+mation of these regions are obtained, and useless infor-
+mation is suppressed. Based on diﬀerent applications,
+attention mechanism could be divided into temporal at-
+tention, spatial attention, and channel attention. Temporal
+attention [37] could assign diﬀerent weights to sequence
+features. Ten, the model could automatically focus on
+important sequence features, thus enhancing the ability to
+process sequence data without increasing the computational
+costs. Spatial attention [38] transforms the spatial infor-
+mation in the original image into another space and retains
+the key information, thereby identifying the substantial areas
+and increasing the attention on these areas. Channel at-
+tention [39] excavates eﬀective features from the channel
+dimension and suppresses task-independent features, thus
+improving network performance.
+For fabric defect detection, temporal attention cannot be
+used because the input is a static image. Considering that the
+defects may occupy a small proportion in the overall image,
+spatial attention can be used to pay more attention to small-
+region defects. Moreover, channel attention is used to reﬁne
+features and improve the algorithm performance. Figure 3
+shows that input feature F is initially processed by max-
+pooling (MaxPool) and average-pooling (AvgPool). Ten,
+channel and spatial attention realize feature transformation
+with the shared three-layer MLP and convolutional oper-
+ation, respectively. Finally, the sigmoid activation function is
+used to calculate diﬀerent attention weights.
+3. Proposed Method
+Figure 4 illustrates the ﬂow chart of the overall algorithm: (1)
+training stage: fabric images after data augmentation are sent
+to the teacher network to detect speciﬁc fabric defects. Ten,
+the defect-related knowledge is distilled from the teacher
+network to the lightweight student network. (2) Testing
+stage: the student network is used to detect speciﬁc fabric
+defects in real-time performance and with minimal per-
+formance degradation. Te testing stage requires deploying
+the student network on the NVIDIA JETSON TX2 platform
+based on TensorRT, which is used to accelerate the student
+network.
+3.1. Teacher Network Structure. Te structure of the pro-
+posed teacher network is shown in Figure 5. Te feature
+extraction part and multiscale information extraction part of
+the teacher network are implemented using Backbone and
+PANet of the YOLOv5 network. Teir speciﬁc structures
+have been introduced in Section 2.2 and are not repeated
+here. Two improvements are presented to perform better
+fabric defect detection.
+(1) Attention enhancement mechanism: the defect areas
+may occupy small regions in the overall textile image.
+Extracting defect-related features from these small
+regions is still a problem, even if PANet could extract
+the context information. Hence, the attention en-
+hancement mechanism is introduced to mitigate the
+problem. First, spatial attention is used to enhance
+the network’s sensitivity to small defect areas. Ten,
+channel
+attention
+is
+used
+to
+suppress
+the
+-10
+-5
+0
+5
+10
+0.5
+0
+1
+Sigmoid
+-5
+-10
+5
+10
+1
+0
+0
+-1
+tanh
+-10
+-5
+0
+0
+5
+10
+2
+4
+6
+8
+10
+ReLU
+Figure 1: Curves of the Sigmoid, Tanh, and ReLu activation functions.
+Mathematical Problems in Engineering
+3
+
+--- Strana 4 ---
+Input feature F
+MaxPool
+AvgPool
+Shared MLP
+Channel Attention
+Input feature F
+[MaxPool; AvgPool]
+Convolution
+Spatial
+Attention
+Channel Attention Module
+Spatial Attention Module
+σ
+σ
+Activation
+Activation
+Figure 3: Illustration of spatial and channel attention mechanisms.
+Teacher Network
+Student Network
+Distillation
+Figure 4: Flow chart of the overall algorithm.
+Focus
+CBL
+CSP1_1
+SPP
+add
+BN
+Leaky
+relu
+CSP1_3
+CBL
+CBL
+CSP1_3
+CBL
+CSP1_3
+CBL
+CSP2_1
+Concate
+Concate
+Concate
+Concate
+CBL
+CSP2_1
+CBL
+upSam
+pling
+CSP2_1
+CBL
+CBL
+CSP2_1
+CSP2_1
+conv
+conv
+conv
+CBL
+=
+conv
+Res
+unit
+Res
+unit
+=
+CBL
+CBL
+CSP1_x
+=
+CBL
+conv
+BN
+Leaky
+relu
+CBL
+CSP2_x
+=
+CBL
+CBL
+conv
+conv
+BN
+Leaky
+relu
+CBL
+conv
+76*76*255
+38*38*255
+19*19*255
+608*608*3
+Input
+Backbone
+PANet
+Output
+Focus
+slice
+CBL
+slice
+slice
+slice
+SPP
+CBL
+Maxpo
+ol
+Maxpo
+ol
+Maxpo
+ol
+CBL
+=
+=
+Concate
+Concate
+Concate
+Concate
+Figure 2: Pipeline of YOLOv5.
+4
+Mathematical Problems in Engineering
+
+--- Strana 5 ---
+nondefective features, thus highlighting the defective
+features. Assuming that the output of PANet is F,
+spatial attention weight As (F) and channel attention
+weights Ac (F) could be calculated as follows:
+Ac(F)  σ MLP Fs
+avg
+
+ + MLP Fs
+max
+ 
+
+,
+As(F)  σ Conv Fs
+avg; Fs
+max
+
+
+
+,
+(2)
+where MLP () represents a shared multilayer per-
+ceptron (three layers, the number of neurons is m,
+m/4, m, respectively; m represents the channel di-
+mension of F.) and Conv () represents a convolution
+operation with the kernel size 7 ∗7. Te attention
+enhancement mechanisms used in this work are
+deﬁned as follows:
+F′  Ac(F) ⊗F,
+F″  As F′
+  ⊗F′.
+(3)
+(2) Multitask learning strategy: the fabric defect detec-
+tion task is usually divided into ubiquitous defect
+detection and speciﬁc defect recognition. Comple-
+mentarity exists between these two tasks. Hence, the
+multitask learning strategy is introduced to utilize
+the complementarity fully. Speciﬁcally, two detection
+heads are designed to detect ubiquitous defects and
+recognize speciﬁc defects. A fusion model is then
+proposed to fuse the outputs of two detection heads
+to predict a more accurate defect recognition
+probability. Details are as follows:
+(1) For the detection head to detect ubiquitous defects,
+the defective probability of the ROI with the largest
+defective probability is deﬁned as PA. Ten, the
+normal probability of the given fabric image is de-
+ﬁned as PN  1 −PA.
+(2) For the detection head to recognize speciﬁc defects,
+the defective probability of each ROI is deﬁned as Pj
+(j  1, . . ., M), where M indicates the number of
+ROIs.
+(3) PN and all Pj are concatenated, and the concatenated
+vector is then sent into the SoftMax activation
+function for normalization. Ten, the probability
+that the given fabric image belongs to a normal
+sample or a certain defect could be obtained.
+3.2. Student Network Structure. Figure 6 exhibits the
+structure of the proposed student network. Diﬀerent from
+the teacher network, the student network performs the
+following lightweight processing:
+(1) Te backbone part is thin. Speciﬁcally, only two sets
+of BottleNeckCSP modules are preserved in the new
+backbone part. Details of the BottleNeckCSP module
+could be found in [29].
+(2) Te PANet is removed to reduce the space-time
+complexity. Te student network relies on the
+knowledge distilled from the teacher network to
+extract multiscale features.
+Te rest of the student network, including the attention
+enhancement, multitask learning strategy, and information
+fusion, are the same with the teacher network.
+3.3. Loss Functions. Te network is trained in a multitask
+learning manner, and a weighted combined loss function is
+presented to optimize the network. Te loss functions used
+consist of the following sections:
+(1) Te ubiquitous defect detection is termed as a binary
+classiﬁcation problem. A cross-entropy loss function
+LT is used and deﬁned as follows:
+LT  −1
+N X
+N
+i1
+yi ln pi + 1 −yi
+ ln 1 −pi
+ 
+
+,
+(4)
+where yi represents the sample label, pi represents the
+output probability of the ubiquitous defects detec-
+tion head, and N represents the number of samples.
+Backbone
+PANet
+Attention
+Enhancement
+Normal/
+Abnormal
+Fabric Defect
+Classiﬁcation
+Fusion module
+Input
+Output
+Probability
+Output
+Figure 5: Structure of the proposed teacher network.
+Mathematical Problems in Engineering
+5
+
+--- Strana 6 ---
+(2) Te speciﬁc defect detection is termed as a multiclass
+problem. A SoftMax loss function Ls is used and
+deﬁned as follows:
+LS  −X
+K
+i1
+eyilog si,
+(5)
+where K represents the kinds of speciﬁc defects, eyi
+represents the one-hot encoding of the ground truth
+label, and si indicates the probability that the sample
+belongs to the ith defect.
+(3) Considering the sample imbalance in the ubiquitous
+defect detection head, focal loss function LF is used to
+mitigate the problem. LF is deﬁned as follows:
+LF  −α 1 −pi
+ clog pi
+ ,
+(6)
+where the hyperparameters α and c are used to al-
+leviate the imbalance problem of positive and neg-
+ative samples and diﬃcult samples, respectively.
+(4) To improve the feature discriminability in the spe-
+ciﬁc defect detection head, central loss function LC is
+employed to increase the interclass distances while
+reducing the innerclass distances of learned features.
+LC is deﬁned as follows:
+LC  1
+2 X
+N
+i1
+xi −cyi
+
+
+2
+2,
+(7)
+where xi represents the sample encoding, and cyi is
+the center of the corresponding category, which xi
+belongs to.
+Te ﬁnal loss function of the proposed method is cal-
+culated in a weighted manner as follows:
+L  w1LT + w2LS + w3LF + w4Lc,
+(8)
+where the weights w1, w2, w3, and w4 are set to 0.4, 0.4, 0.1,
+and 0.1, respectively. Settings of diﬀerent weights are ob-
+tained based on the crossvalidation on the publicly available
+databases.
+4. Experimental Results
+4.1. Databases. One public database comes from the
+Xuelang Tianchi AI Challenge. It contains 3,331 labeled
+images with the rectangular locations to label the defects.
+Te number of normal pictures is 2,163, and the number
+of defective pictures is 1,168. It has 22 kinds of defects,
+including jumps, knots, stains, puncture holes, and
+lacking warp. Te data distribution on the database shows
+an unbalanced state in which the number of normal
+pictures is much higher than the number of defective
+pictures. Using the same experimental protocol as [19],
+the speciﬁc defect category is reintegrated into puncture
+hole, knots, rubbing hole, thin spinning, jumps, hanging
+warp, lacking warp, brushed hole, stains, and others. In
+experiments, 70% of the entire database is taken as the
+training set, and the remaining 30% are the test set.
+Several training samples and their labels are shown in
+Figure 7.
+Another used public database is TILDA, a well-known
+fabric texture database containing eight kinds of repre-
+sentative fabric categories. Seven error classes and a
+correct class are deﬁned according to the textile atlas
+analysis. Similar to [40], 300 fabric images are chosen and
+are divided into six categories, such as holes, scratch,
+knots, stain, carrying, and normal. Each class consists of
+50 fabric images, and each image is resized to 256 × 256
+Normal/
+Abnormal
+Fabric Defect
+Classiﬁcation
+Fusion module
+Input
+Output
+Probability
+Output
+Backbone
+BottleNeckCSP
+BottleNeckCSP
+Enhancement
+Spatial_Att
+Channel_Att
+Figure 6: Structure of the proposed student network.
+6
+Mathematical Problems in Engineering
+
+--- Strana 7 ---
+pixels. In experiments, 70% of the entire database is taken
+as the training set, and the remaining 30% are the test set.
+Figure 8 demonstrates several samples and their labels.
+4.2. Evaluation Metrics. Te defect detection algorithm
+proposed in this work could distinguish between normal and
+defect images and identify speciﬁc fabric defects. Terefore,
+area under the ROC curve (AUC) and mean average pre-
+cision (mAP) are used as metrics for evaluation. Te former
+reﬂects the algorithm’s ability to distinguish between normal
+and defective fabric images, whereas the latter reﬂects the
+algorithm’s ability to recognize speciﬁc fabric defects. To
+calculate AUC and mAP, precision (P) and recall (R) are
+calculated initially, as follows:
+P 
+TP
+(TP + FP),
+R 
+TP
+(TP + FN),
+(9)
+where TP (true positive) represents the number of samples
+whose labels are positive, and the actual forecasts are pos-
+itive. FP (false positive) indicates the number of samples
+whose labels are negative, and the actual forecasts are
+positive. FN (false negative) represents the number of
+samples whose labels are positive, and the actual forecasts
+are negative. Based on the calculated P and R, the P-R curve
+could be obtained. Ten, the ROC curve could be obtained.
+Te cover area of the ROC curve is AUC.
+mAP represents the mean of diﬀerent APs, where AP
+represents the area under the P-R curve. mAP is calculated as
+follows:
+mAP  1
+K X
+K
+i1
+Ri −Ri−1
+ Pi,
+(10)
+where k represents the number of categories.
+4.3. Qualitative Analysis. A qualitative analysis of the pro-
+posed method is performed from three aspects: (1) the ability of
+the proposed teacher network to detect speciﬁc defects on
+public databases is evaluated, and OurNet is used for com-
+parison; (2) the accuracy of the proposed teacher network to
+locate the defect areas is evaluated, and the improved YOLOv3
+proposed by Jing et al. [24] is used for comparison; and (3)
+comparisons between the teacher and student networks are
+performed on self-collected fabric images to verify the gen-
+eralization performance of the proposed method. Quantitative
+comparisons between the teacher and student networks will be
+introduced in the following section.
+Figure 9 demonstrates the comparisons between the
+proposed teacher network and OurNet in detecting speciﬁc
+defects on the Tianchi AI database. Te results show that our
+method
+successfully
+recognizes
+diﬀerent
+defect
+types
+beneﬁting from the used multitask learning, focal loss
+function, and the center loss constraint. By contrast, OurNet
+fails to identify the puncture hole defects. It also mistakes the
+brushed hole and thin spinning defects for others and jumps
+defects, respectively.
+Figure 10 shows the location results between the pro-
+posed teacher network and the improved YOLOv3 proposed
+by Jing et al. [24] on the Tianchi AI database. Types of
+speciﬁc defects are labeled under each subﬁgure for a clearer
+view. In the subﬁgure, the green box represents the real
+defect area, the red box is the positioning result of the
+proposed teacher network, and the yellow box is the posi-
+tioning result of the improved YOLOv3. Figure 10 shows
+that the defect regions predicted by the proposed method are
+more accurate than those predicted by the improved
+YOLOv3. Such superiority may be a beneﬁt from the strong
+YOLOv5 and our improvements. Te improved YOLOv3
+suﬀers from positioning small defect areas, although it could
+detect most defects. For example, it fails to detect the
+hanging warp and jump defects.
+Figure 11 compares the teacher and student networks
+on
+self-collected
+fabric
+images,
+speciﬁcally,
+their
+jumps
+puncture hole
+lacking warp
+hanging warp
+thin spinning
+rubbing hole
+knots
+stains 
+Figure 7: Illustrations of some training samples and their labels on the Tianchi AI database.
+Mathematical Problems in Engineering
+7
+
+--- Strana 8 ---
+performance in positioning defect areas. In each sub-
+ﬁgure, the green box represents the real defect area, the
+red box is the positioning result of the teacher network,
+and the yellow box is the positioning result of the student
+network. Te teacher network could more accurately
+identify the defect areas. Te defect detection performance
+of the student network is slightly weaker than that of the
+teacher network. However, the student network has lower
+space-time overheads; thus, it is more suitable to be
+arranged for embedded systems.
+4.4. Quantitative Analysis Results. An ablation study is
+performed on the Tianchi AI database to verify the eﬀects of
+diﬀerent
+improvement
+methods,
+including
+multitask
+learning, focal loss, and central loss constraints. Te results
+are presented in Table 1. Te ablation study of the teacher
+network shows that the student network has similar results.
+Table 1 shows that the teacher network is degraded into
+traditional YOLOv5 when none of the improvements is
+used. Compared with the YOLOv5-based detection method,
+the introduced attention module could lead to an improved
+performance with increased AUC and mAP. Ten, AUC and
+mAP are further improved by simultaneously detecting
+ubiquitous and speciﬁc defects with the proposed multitask
+learning strategy because of the complementarity between
+diﬀerent tasks. Based on the multitask learning strategy, the
+introduction of the focal loss function and central loss
+constraint could further improve the defect detection results.
+Simultaneously using all improvements achieves the best
+performance on the Tianchi AI database, which veriﬁes the
+eﬀects of diﬀerent improvement methods.
+A quantitative comparison between the teacher and
+student networks is presented in Table 2. Te identiﬁcation
+times are tested on an Nvidia JETSON TX2. Te table shows
+that the student network could still meet the needs of fabric
+defect detection, despite the performance degradation ob-
+served compared with the teacher network. More impor-
+tantly, the identiﬁcation time of the student network is
+approximately half of the teacher network. Its identiﬁcation
+time guarantees the real-time performance on embedded
+devices.
+Finally, comparisons with other mainstream methods
+are performed to verify the eﬀectiveness of the proposed
+method. Te improved YOLOv3 [24] and the pretrained
+deep CNN [40] are selected as the fabric defect detection
+algorithms. Faster-RCNN [34] and YOLOv5 [29] are se-
+lected as the universal object detection methods. Te
+comparison results are presented in Table 3.
+Te above table shows that the original OurNet based on
+AlexNet has poor defect detection performance because it
+fails to handle small defect areas well. Two variants of
+OurNet, namely, OurNet-VGG16 and OurNet-ResNet,
+obtain better performance beneﬁt from extracting better
+features with deeper structures. Jing et al. [24] achieves
+better
+defect
+detection
+performance
+using
+improved
+YOLOv3 networks. A pretrained CNN is also beneﬁcial in
+boosting the defect detection performance as proposed by
+Jing et al. [40]. YOLOv5 and faster-RCNN achieve similar
+defect detection performance beneﬁting from their strong
+power in object detection. Both methods are superior to the
+student network proposed in this work, but the time
+overhead is relatively large. Te proposed teacher network
+achieves the best fabric defect detection performance,
+Normal
+Knots
+Holes
+Scratch
+Stain
+Carrying
+Figure 8: Illustrations of several samples and their labels on the TILDA database.
+8
+Mathematical Problems in Engineering
+
+--- Strana 9 ---
+whereas the student network provides an alternative to
+detect fabric defects with acceptable accuracy on embedded
+devices.
+Table 4 presents the comparisons between diﬀerent
+methods on the TILDA database. OurNet [41] and its
+variants perform much better than on the Tianchi AI da-
+tabase because the TILDA database contains fewer cate-
+gories and equal samples per category. Improved YOLOv3
+[24] proposed by Jing et al. [40] achieve similar performance
+due to the reason discussed above. Similar to the compar-
+isons on the Tianchi AI database, two state-of-the-art de-
+tectors, YOLOv5 [29] and faster-RCNN [34], obtained
+higher AUC and mAP compared with that of the proposed
+student network. Te proposed teacher network still ach-
+ieves the best defect detection performance, which veriﬁes
+the accuracy of the proposed method.
+Ground Truth: rubbing hole
+OurNet: rubbing hole
+Ours: rubbing hole
+Ground Truth: hanging 
+OurNet: hanging warp
+Ours: hanging warp
+Ground Truth: knots
+OurNet: knots
+Ours: knots
+Ground Truth: lacking warp
+OurNet: lacking warp
+Ours: lacking warp
+Ground Truth: jumps
+OurNet: jumps
+Ours: jumps
+Ground Truth: stains 
+OurNet: stains 
+Ours: stains 
+Ground Truth: brushed hole
+OurNet: others
+Ours: brushed hole
+Ground Truth: puncture hole
+OurNet: normal
+Ours: puncture hole
+Ground Truth: thin spinning
+OurNet: jumps
+Ours: thin spinning
+Figure 9: Comparisons between the teacher network and OurNet in detecting speciﬁc defects.
+Mathematical Problems in Engineering
+9
+
+--- Strana 10 ---
+knots
+brushed hole
+hanging warp
+jumps
+others
+puncture hole
+Figure 10: Comparisons between the teacher network and the improved YOLOv3 in positioning defect areas.
+10
+Mathematical Problems in Engineering
+
+--- Strana 11 ---
+Figure 11: Comparisons between the teacher and student networks on self-collected fabric images.
+Table 1: Ablation study of the teacher network on the Tianchi AI database.
+Attention module
+Multitask learning
+Focal loss
+Central loss constraints
+AUC
+mAP
+0.938
+0.403
+√
+0.957
+0.412
+√
+√
+0.965
+0.431
+√
+√
+√
+0.971
+0.441
+√
+√
+√
+0.973
+0.442
+√
+√
+√
+√
+0.981
+0.447
+Table 2: Quantitative comparisons between the teacher and student networks on the Tianchi AI database.
+AUC
+mAP
+Identiﬁcation times (ms)
+YOLOv5
+0.957
+0.412
+32
+Teacher network
+0.981
+0.447
+35
+Student network
+0.952
+0.406
+16
+Table 3: Comparisons of diﬀerent fabric defect detection algorithms on the Tianchi AI database.
+AUC
+mAP
+OurNet [41]
+0.787
+0.104
+OurNet-VGG16
+0.848
+0.288
+OurNet-ResNet
+0.882
+0.311
+Improved YOLOv3 [24]
+0.927
+0.372
+Jing et al. [40]
+0.932
+0.382
+YOLOv5 [29]
+0.957
+0.412
+Faster-RCNN [34]
+0.956
+0.413
+Student network
+0.952
+0.406
+Teacher network
+0.981
+0.447
+Mathematical Problems in Engineering
+11
+
+--- Strana 12 ---
+5. Discussion and Conclusion
+An automatic fabric defect detection method based on
+YOLOv5 is proposed because of the considerable role of
+fabric defect detection in the textile industry. A teacher-
+student architecture is used in considering the real-time
+requirements of the fabric defect detection. Te deep teacher
+network could precisely detect speciﬁc fabric defects. After
+knowledge distillation, the shallow student network could
+perform fabric defects in real time with an acceptable ac-
+curacy. A multitask learning strategy is introduced to detect
+ubiquitous and speciﬁc defects simultaneously, and better
+utilize the complementarity between diﬀerent tasks. Focal
+loss and center loss constraints are introduced for better
+defect detection performance. Evaluations are performed on
+the public databases and self-collected fabric images.
+Comparisons with other mainstream methods indicate that
+the proposed method is applicable to the automatic detec-
+tion task of textile defects, which can greatly improve the
+accuracy and eﬃciency of defect detection and enhance the
+automation level of the textile industry.
+Data Availability
+Te Xuelang Tianchi AI Challenge dataset is publicly
+available.
+Conflicts of Interest
+Te authors declare no conﬂicts of interest.
+Authors’ Contributions
+All authors have read and agreed to the published version of
+the manuscript.
+Acknowledgments
+Tis research was funded by the National Natural Science
+Foundation of China under grant no. 51674265.
+References
+[1] K. Srinivasan, P. H. Dastoor, and P. Radhakrishnaiah, “FDAS:
+a knowledge-based framework for analysis of defects in woven
+textile structures,” Journal of the Textile Institute Proceedings
+and Abstracts, vol. 83, no. 3, pp. 431–448, 1990.
+[2] A. Rasheed, B. Zafar, and A. Rasheed, “Fabric defect detection
+using computer vision techniques: a comprehensive review,”
+Mathematical Problems in Engineering, vol. 2020, Article ID
+8189403, 24 pages, 2020.
+[3] A. Latif, A. Rasheed, and U. Sajid, “Content-based image
+retrieval and feature extraction: a comprehensive review,”
+Mathematical Problems in Engineering, vol. 2019, Article ID
+9658350, 21 pages, 2019.
+[4] T. Tomas and M. Cattoen, “Automatic inspection of simply
+patterned material in the textile industry,” in Proceedings of
+SPIE: Society of Photo-Optical Instrumentation Engineers,
+pp. 2–12, Bellingham, WA, USA, 1994.
+[5] Y. Ye, “Fabric defect detection using fuzzy inductive rea-
+soning based on image histogram statistic variables,” in
+Proceedings of the 6th International Conference on Fuzzy
+Systems and Knowledge Discovery, pp. 191–194, Tianjin,
+China, August 2009.
+[6] X. Jia, “Fabric defect detection based on open source com-
+puter vision library OpenCV,” in Proceedings of the 2010 2nd
+International Conference on Signal Processing Systems, Dalian,
+China, July 2010.
+[7] J. Jing, H. Zhang, J. Wang, P. Li, and J. Jia, “Fabric defect
+detection using Gabor ﬁlters and defect classiﬁcation based on
+LBP and Tamura method,” Journal of the Textile Institute,
+vol. 104, no. 1, pp. 18–27, 2013.
+[8] M. Hao, J. Junfeng, and S. Zebin, “Patterned fabric defect
+detection based on LBP and HOG feature,” Journal of Elec-
+tronic Measurement and Instrument, vol. 32, no. 4, pp. 95–102,
+2018.
+[9] D. Yapi, M. S. Allili, and N. Baaziz, “Automatic fabric defect
+detection using learning-based local textural distributions in
+the contourlet domain,” IEEE Transactions on Automation
+Science and Engineering, vol. 15, no. 3, pp. 1014–1026, 2017.
+[10] N. T. Deotale and T. K. Sarode, “Fabric defect detection
+adopting combined GLCM, gabor wavelet features and ran-
+dom decision forest,” 3D Research, vol. 10, no. 1, p. 5, 2019.
+[11] M. A. Shabir, M. U. Hassan, and X. Yu, “Tyre defect detection
+based on GLCM and gabor ﬁlter,” in Proceedings of the 2019
+22nd International Multitopic Conference (INMIC), pp. 1–6,
+Islamabad, Pakistan, November 2019.
+[12] G. Liu and X. Zheng, “Fabric defect detection based on in-
+formation entropy and frequency domain saliency,” Te
+Visual Computer, vol. 37, pp. 1–14, 2020.
+[13] C. Chi-Ho Chan and G. K. H. Pang, “Fabric defect detection
+by Fourier analysis,” IEEE Transactions on Industry Appli-
+cations, vol. 36, no. 5, pp. 1267–1276, 2000.
+[14] L. Jia, C. Chen, J. Liang, and Z. Hou, “Fabric defect inspection
+based on lattice segmentation and Gabor ﬁltering,” Neuro-
+computing, vol. 238, pp. 84–102, 2017.
+[15] X. Yang, G. Pang, and N. Yung, “Discriminative training
+approaches to fabric defect classiﬁcation based on wavelet
+transform,” Pattern Recognition, vol. 37, no. 5, pp. 889–899,
+2004.
+Table 4: Comparisons of diﬀerent fabric defect detection algorithms on the TILDA database.
+AUC
+mAP
+OurNet [41]
+0.866
+0.301
+OurNet-VGG16
+0.912
+0.346
+OurNet-ResNet
+0.926
+0.382
+Jing et al. [40]
+0.958
+0.411
+YOLOv5 [29]
+0.970
+0.442
+Faster-RCNN [34]
+0.972
+0.443
+Student network
+0.965
+0.428
+Teacher network
+0.988
+0.451
+12
+Mathematical Problems in Engineering
+
+--- Strana 13 ---
+[16] S. Sadaghiyanfam, “Using gray-level-co-occurrence matrix
+and wavelet transform for textural fabric defect detection: a
+comparison study,” in Proceedings of the 2018 Electric Elec-
+tronics, Computer Science, Biomedical Engineerings’ Meeting
+(EBBT), pp. 1–5, Istanbul, Turkey, April 2018.
+[17] B. Yang, G. Yan, and P. Wang, “A novel graph-based tra-
+jectory predictor with pseudo-oracle,” 2021, https://arxiv.org/
+abs/2002.00391.
+[18] J. Wang, P. Fu, and R. X. Gao, “Machine vision intelligence for
+product defect inspection based on deep learning and Hough
+transform,” Journal of Manufacturing Systems, vol. 51,
+pp. 52–60, 2019.
+[19] B. Yang, W. Zhan, and P. Wang, “Crossing or not? Context-
+based recognition of pedestrian crossing intention in the
+urban
+environment,”
+IEEE
+Transactions
+on
+Intelligent
+Transportation Systems, 2021.
+[20] J. Liu, C. Wang, and H. Su, “Multistage GAN for fabric defect
+detection,” IEEE Transactions on Image Processing, vol. 29,
+pp. 3388–3400, 2019.
+[21] S. Mei, Y. Wang, and G. Wen, “Automatic fabric defect
+detection
+with
+a
+multi-scale
+convolutional
+denoising
+autoencoder network model,” Sensors, vol. 18, no. 4, p. 1064,
+2018.
+[22] T. Xian, D. Zhang, and W. Ma, “Automatic metallic surface
+defect detection and recognition with convolutional neural
+networks,” Applied Sciences-Basel, vol. 8, no. 9, 2018.
+[23] B. Wei, K. Hao, X.-S. Tang, and L. Ren, “Fabric defect de-
+tection based on faster RCNN,” in Proceedings of the Inter-
+national Conference on Artiﬁcial Intelligence on Textile and
+Apparel, Hong Kong, China, June 2018.
+[24] J. Jing, D. Zhuo, and H. Zhang, “Fabric defect detection using
+the improved YOLOv3 model,” Journal of Engineered Fibers
+and Fabrics, vol. 15, 2020.
+[25] P. M. Mahajan, S. R. Kolhe, and P. M. Patil, “A review of
+automatic fabric defect detection techniques,” Advances in
+Computational Research, vol. 1, no. 2, pp. 18–29, 2009.
+[26] J. Cao, J. Zhang, Z. Wen, N. Wang, and X. Liu, “Fabric defect
+inspection using prior knowledge guided least squares re-
+gression,” Multimedia Tools and Applications, vol. 76, no. 3,
+pp. 4141–4157, 2017.
+[27] X. Kang and E. Zhang, “A universal and adaptive fabric defect
+detection algorithm based on sparse dictionary learning,”
+IEEE Access, vol. 8, pp. 221808–221830, 2020.
+[28] J. Zhou, D. Semenovich, A. Sowmya, and J. Wang, “Dictionary
+learning framework for fabric defect detection,” Journal of the
+Textile Institute, vol. 105, no. 3, pp. 223–234, 2014.
+[29] A. Kuznetsova, T. Maleva, and V. Soloviev, “Detecting apples
+in orchards using YOLOv3 and YOLOv5 in general and close-
+up images,” in Proceedings of the International Symposium on
+Neural Networks, Cairo, Egypt, October 2020.
+[30] T. Y. Lin, P. Goyal, and R. Girshick, “Focal loss for dense
+object detection,” in Proceedings of the IEEE International
+Conference on Computer Vision, pp. 2980–2988, Venice, Italy,
+October 2017.
+[31] B. Yang, W. Zhan, N. Wang, X. Liu, and J. Lv, “Counting
+crowds using a scale-distribution-aware network and adaptive
+human-shaped kernel,” Neurocomputing, vol. 390, pp. 207–
+216, 2020.
+[32] S. Ren, K. He, and R. Girshick, “Object detection networks on
+convolutional feature maps,” IEEE Transactions on Pattern
+Analysis and Machine Intelligence, vol. 39, no. 7, pp. 1476–
+1481, 2016.
+[33] R. Girshick, “Fast r-cnn,” in Proceedings of the IEEE Inter-
+national Conference on Computer Vision, pp. 1440–1448,
+Santiago, Chile, December 2015.
+[34] S. Ren, K. He, and R. Girshick, “Faster r-cnn: towards real-
+time object detection with region proposal networks,” Ad-
+vances in Neural Information Processing Systems, vol. 28,
+pp. 91–99, 2015.
+[35] W. Liu, D. Anguelov, D. Erhan et al., “Ssd: single shot
+multibox detector,” in Proceedings of the European Conference
+on Computer Vision, Amsterdam, Te Netherlands, October
+2016.
+[36] J. Redmon, S. Divvala, R. Girshick et al., “You only look once:
+uniﬁed, real-time object detection,” in Proceedings of the IEEE
+Conference on Computer Vision and Pattern Recognition,
+pp. 779–788, Las Vegas, NV, USA, June 2016.
+[37] A. Vaswani, N. Shazeer, and N. Parmar, “Attention is all you
+need,” 2017, https://arxiv.org/abs/1706.03762.
+[38] F. Locatello, D. Weissenborn, and T. Unterthiner, “Object-
+centric learning with slot attention,” 2020, https://arxiv.org/
+abs/2006.15055.
+[39] S. Woo, J. Park, J.-Y. Lee, and I. S. Kweon, “Cbam: con-
+volutional block attention module,” in Proceedings of the
+European Conference on Computer Vision (ECCV), Munich,
+Germany, September 2018.
+[40] J. F. Jing, H. Ma, and H. H. Zhang, “Automatic fabric defect
+detection using a deep convolutional neural network,” Col-
+oration Technology, vol. 135, no. 3, pp. 213–223, 2019.
+[41] Z. Wu, Y. Zhuo, J. Li, Y. Feng, B. Han, and S. Liao, “A Fast
+monochromatic fabric defect Fast detection method based on
+convolutional neural network,” Journal of Computer-Aided
+Design & Computer Graphics, vol. 30, no. 12, p. 2262, 2018.
+Mathematical Problems in Engineering
+13

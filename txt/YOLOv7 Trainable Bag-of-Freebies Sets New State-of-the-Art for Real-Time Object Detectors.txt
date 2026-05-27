@@ -1,0 +1,1762 @@
+
+--- Strana 1 ---
+YOLOv7: Trainable bag-of-freebies sets new state-of-the-art
+for real-time object detectors
+Chien-Yao Wang1, Alexey Bochkovskiy, and Hong-Yuan Mark Liao1
+1Institute of Information Science, Academia Sinica, Taiwan
+kinyiu@iis.sinica.edu.tw, alexeyab84@gmail.com, and liao@iis.sinica.edu.tw
+Abstract
+Real-time object detection is one of the most important
+research topics in computer vision. As new approaches re-
+garding architecture optimization and training optimization
+are continually being developed, we have found two re-
+search topics that have spawned when dealing with these
+latest state-of-the-art methods. To address the topics, we
+propose a trainable bag-of-freebies oriented solution. We
+combine the ﬂexible and efﬁcient training tools with the
+proposed architecture and the compound scaling method.
+YOLOv7 surpasses all known object detectors in both speed
+and accuracy in the range from 5 FPS to 120 FPS and
+has the highest accuracy 56.8% AP among all known real-
+time object detectors with 30 FPS or higher on GPU V100.
+Source code is released in https://github.com/
+WongKinYiu/yolov7.
+1. Introduction
+Real-time object detection is a very important topic in
+computer vision, as it is often a necessary component in
+computer vision systems. For example, multi-object track-
+ing [90,91], autonomous driving [17,39], robotics [34,55],
+medical image analysis [33, 44], etc. The computing de-
+vices that execute real-time object detection is usually some
+mobile CPUs or GPUs, as well as various neural process-
+ing units (NPUs). For example, the Apple neural engine
+(Apple), the neural compute stick (Intel), Jetson AI edge
+devices (Nvidia), the edge TPU (Google), the neural pro-
+cessing engine (Qualcomm), the AI processing unit (Medi-
+aTek), and the AI SoCs (Kneron), are all NPUs. Some of
+edge devices focus on speeding up different operations such
+as vanilla convolution, depth-wise convolution, or MLP op-
+erations. In this paper, the real-time object detector we pro-
+posed mainly hopes that it can support both mobile GPU
+and GPU devices from the edge to the cloud.
+In recent years, the real-time object detector is still devel-
+oped for different edge devices. For example, the develop-
+Figure 1. Comparison with other real-time object detectors, our
+proposed methods achieve state-of-the-arts performance.
+ment of MCUNet [46,47] and NanoDet [51] focused on pro-
+ducing low-power single-chip and improving the inference
+speed on edge CPU. As for methods such as YOLOX [20]
+and YOLOR [79], they focus on improving the inference
+speed of various GPUs. More recently, the development of
+real-time object detector has focused on the design of ef-
+ﬁcient architecture. As for real-time object detectors that
+can be used on CPU [51, 81, 82, 86], their design is mostly
+based on MobileNet [26, 27, 63], ShufﬂeNet [52, 89], or
+GhostNet [24]. Another real-time object detectors are de-
+veloped for GPU [20,79,94], they mostly use ResNet [25],
+DarkNet [60], or DLA [85], and then use the CSPNet [77]
+strategy to optimize the architecture. The development di-
+rection of the proposed methods in this paper are different
+from that of the current real-time object detectors. In ad-
+dition to architecture optimization, our proposed methods
+will focus on the optimization of the training process. Our
+focus will be on some optimized modules and optimization
+methods which may strengthen the training cost for improv-
+ing the accuracy of object detection, but without increasing
+the inference cost. We call these modules and optimization
+methods trainable bag-of-freebies.
+This CVPR paper is the Open Access version, provided by the Computer Vision Foundation.
+Except for this watermark, it is identical to the accepted version;
+the final published version of the proceedings is available on IEEE Xplore.
+7464
+
+--- Strana 2 ---
+Recently, model re-parameterization [11,12,28] and dy-
+namic label assignment [16,19,40] have become important
+topics in network training and object detection. Mainly af-
+ter the above new concepts are proposed, the training of
+object detector evolves many new issues. In this paper, we
+will present some of the new issues we have discovered and
+devise effective methods to address them. For model re-
+parameterization, we analyze the model re-parameterization
+strategies applicable to layers in different networks with the
+concept of gradient propagation path, and propose planned
+re-parameterization model. In addition, when we discover
+that with dynamic label assignment technology, the train-
+ing of model with multiple output layers will generate new
+issues. That is: “How to assign dynamic targets for the out-
+puts of different branches?” For this problem, we propose
+a new label assignment method called coarse-to-ﬁne lead
+guided label assignment.
+The contributions of this paper are summarized as fol-
+lows: (1) we design several trainable bag-of-freebies meth-
+ods, so that real-time object detection can greatly improve
+the detection accuracy without increasing the inference
+cost; (2) for the evolution of object detection methods,
+we found two new issues, namely how re-parameterization
+module replaces original module, and how dynamic label
+assignment strategy deals with assignment to different out-
+put layers. In addition, we also propose methods to address
+the difﬁculties arising from these issues; (3) we propose
+“extend” and “compound scaling” methods for the real-time
+object detector that can effectively utilize parameters and
+computation; and (4) the method we proposed can effec-
+tively reduce large amount of parameters and computation
+of state-of-the-art real-time object detector, and has faster
+inference speed and higher detection accuracy.
+2. Related work
+2.1. Real-time object detectors
+Currently state-of-the-art real-time object detectors are
+mainly based on YOLO [58–60] and FCOS [73,74], which
+are [2, 20, 22, 51, 76, 79, 83]. Being able to become a state-
+of-the-art real-time object detector usually requires the fol-
+lowing characteristics: (1) a faster and stronger network ar-
+chitecture; (2) a more effective feature integration method
+[8, 21, 29, 36, 43, 56, 71, 94]; (3) a more accurate detec-
+tion method [66, 73, 74]; (4) a more robust loss function
+[5, 53, 54, 61, 92, 93]; (5) a more efﬁcient label assignment
+method [16,19,40,80,96]; and (6) a more efﬁcient training
+method. In this paper, we do not intend to explore self-
+supervised learning or knowledge distillation methods that
+require additional data or large model. Instead, we will de-
+sign new trainable bag-of-freebies method for the issues de-
+rived from the state-of-the-art methods associated with (4),
+(5), and (6) mentioned above.
+2.2. Model re-parameterization
+Model re-parametrization techniques [3,9–13,18,23,28,
+30, 32, 68, 72, 75] merge multiple computational modules
+into one at inference stage. The model re-parameterization
+technique can be regarded as an ensemble technique, and
+we can divide it into two categories, i.e., module-level en-
+semble and model-level ensemble. There are two common
+practices for model-level re-parameterization to obtain the
+ﬁnal inference model.
+One is to train multiple identical
+models with different training data, and then average the
+weights of multiple trained models. The other is to per-
+form a weighted average of the weights of models at differ-
+ent iteration number. Module-level re-parameterization is a
+more popular research issue recently. This type of method
+splits a module into multiple identical or different module
+branches during training and integrates multiple branched
+modules into a completely equivalent module during infer-
+ence. However, not all proposed re-parameterization mod-
+ule can be perfectly applied to different architectures. With
+this in mind, we have developed new re-parameterization
+module and designed related application strategies for vari-
+ous architectures.
+2.3. Model scaling
+Model scaling [1,14,15,49,57,69–71] is a way to scale
+up or down an already designed model and make it ﬁt in dif-
+ferent computing devices. The model scaling method usu-
+ally uses different scaling factors, such as resolution (size
+of input image), depth (number of layer), width (number
+of channel), and stage (number of feature pyramid), so as
+to achieve a good trade-off for the amount of network pa-
+rameters, computation, inference speed, and accuracy. Net-
+work architecture search (NAS) is one of the commonly
+used model scaling methods. NAS can automatically search
+for suitable scaling factors from search space without deﬁn-
+ing too complicated rules.
+The disadvantage of NAS is
+that it requires very expensive computation to complete the
+search for model scaling factors. In [14], the researcher
+analyzes the relationship between scaling factors and the
+amount of parameters and operations, trying to directly es-
+timate some rules, and thereby obtain the scaling factors re-
+quired by model scaling. Checking the literature, we found
+that almost all model scaling methods analyze individual
+scaling factor independently, and even the methods in the
+compound scaling category also optimized scaling factor
+independently. The reason for this is because most popular
+NAS architectures deal with scaling factors that are not very
+correlated. We observed that all concatenation-based mod-
+els, such as DenseNet [31] or VoVNet [38], will change the
+input width of some layers when the depth of such models
+is scaled. Since the proposed architecture is concatenation-
+based, we have to design a new compound scaling method
+for this model.
+7465
+
+--- Strana 3 ---
+Figure 2. Extended efﬁcient layer aggregation networks. The proposed extended ELAN (E-ELAN) does not change the gradient transmis-
+sion path of the original architecture at all, but use group convolution to increase the cardinality of the added features, and combine the
+features of different groups in a shufﬂe and merge cardinality manner. This way of operation can enhance the features learned by different
+feature maps and improve the use of parameters and calculations.
+3. Architecture
+3.1. Extended efﬁcient layer aggregation networks
+In most of the literature on designing the efﬁcient ar-
+chitectures, the main considerations are no more than the
+number of parameters, the amount of computation, and
+the computational density. Starting from the characteris-
+tics of memory access cost, Ma et al. [52] analyzed the
+inﬂuence of the input/output channel ratio, the number of
+branches of the architecture, and the element-wise opera-
+tion on the network inference speed. Doll´ar et al. [14] addi-
+tionally considered activation when performing model scal-
+ing, that is, to put more consideration on the number of el-
+ements in the output tensors of convolutional layers. The
+design of CSPVoVNet [76] in Figure 2 (b) is a variation of
+VoVNet [38]. In addition to considering the aforementioned
+basic designing concerns, the architecture of CSPVoVNet
+[76] also analyzes the gradient path, in order to enable the
+weights of different layers to learn more diverse features.
+The gradient analysis approach described above makes in-
+ferences faster and more accurate. ELAN [78] in Figure 2
+(c) considers the following design strategy – “How to design
+an efﬁcient network?.” They came out with a conclusion:
+By controlling the longest shortest gradient path, a deeper
+network can learn and converge effectively. In this paper,
+we propose Extended-ELAN (E-ELAN) based on ELAN
+and its main architecture is shown in Figure 2 (d).
+Regardless of the gradient path length and the stacking
+number of computational blocks in large-scale ELAN, it has
+reached a stable state. If more computational blocks are
+stacked unlimitedly, this stable state may be destroyed, and
+the parameter utilization rate will decrease. The proposed
+E-ELAN uses expand, shufﬂe, merge cardinality to achieve
+the ability to continuously enhance the learning ability of
+the network without destroying the original gradient path.
+In terms of architecture, E-ELAN only changes the archi-
+tecture in computational block, while the architecture of
+transition layer is completely unchanged. Our strategy is
+to use group convolution to expand the channel and car-
+dinality of computational blocks. We will apply the same
+group parameter and channel multiplier to all the compu-
+tational blocks of a computational layer. Then, the feature
+map calculated by each computational block will be shuf-
+ﬂed into g groups according to the set group parameter g,
+and then concatenate them together. At this time, the num-
+ber of channels in each group of feature map will be the
+same as the number of channels in the original architec-
+ture. Finally, we add g groups of feature maps to perform
+merge cardinality. In addition to maintaining the original
+ELAN design architecture, E-ELAN can also guide differ-
+ent groups of computational blocks to learn more diverse
+features.
+3.2. Model scaling for concatenation-based models
+The main purpose of model scaling is to adjust some at-
+tributes of the model and generate models of different scales
+to meet the needs of different inference speeds. For example
+the scaling model of EfﬁcientNet [69] considers the width,
+depth, and resolution. As for the scaled-YOLOv4 [76], its
+scaling model is to adjust the number of stages. In [14],
+Doll´ar et al. analyzed the inﬂuence of vanilla convolution
+and group convolution on the amount of parameter and
+computation when performing width and depth scaling, and
+used this to design the corresponding model scaling method.
+The above methods are mainly used in architectures such as
+PlainNet or ResNet. When these architectures are in execut-
+7466
+
+--- Strana 4 ---
+Figure 3.
+Model scaling for concatenation-based models.
+From (a) to (b), we observe that when depth scaling is performed on
+concatenation-based models, the output width of a computational block also increases. This phenomenon will cause the input width
+of the subsequent transmission layer to increase. Therefore, we propose (c), that is, when performing model scaling on concatenation-
+based models, only the depth in a computational block needs to be scaled, and the remaining of transmission layer is performed with
+corresponding width scaling.
+ing scaling up or scaling down, the in-degree and out-degree
+of each layer will not change, so we can independently an-
+alyze the impact of each scaling factor on the amount of
+parameters and computation. However, if these methods
+are applied to the concatenation-based architecture, we will
+ﬁnd that when scaling up or scaling down is performed on
+depth, the in-degree of a translation layer which is immedi-
+ately after a concatenation-based computational block will
+decrease or increase, as shown in Figure 3 (a) and (b).
+It can be inferred from the above phenomenon that
+we cannot analyze different scaling factors separately for
+a concatenation-based model but must be considered to-
+gether. Take scaling-up depth as an example, such an ac-
+tion will cause a ratio change between the input channel and
+output channel of a transition layer, which may lead to a de-
+crease in the hardware usage of the model. Therefore, we
+must propose the corresponding compound model scaling
+method for a concatenation-based model. When we scale
+the depth factor of a computational block, we must also cal-
+culate the change of the output channel of that block. Then,
+we will perform width factor scaling with the same amount
+of change on the transition layers, and the result is shown
+in Figure 3 (c). Our proposed compound scaling method
+can maintain the properties that the model had at the initial
+design and maintains the optimal structure.
+4. Trainable bag-of-freebies
+4.1. Planned re-parameterization model
+Although RepConv [12] has achieved excellent per-
+formance on the VGG [65], when we directly apply
+it to ResNet [25] and DenseNet [31] and other non-
+plain architectures, its accuracy will be signiﬁcantly re-
+duced.
+We use gradient ﬂow propagation paths to ana-
+lyze how re-parameterization convolution should be com-
+bined with different network. We also designed planned
+re-parameterization model accordingly.
+RepConv actually combines 3×3 convolution, 1×1 con-
+volution, and identity connection in one convolutional layer.
+After analyzing the combination and corresponding perfor-
+Figure 4. Planned re-parameterization model. In the proposed
+planned re-parameterization model, we found that a layer with
+residual or concatenation connections, its RepConv should not
+have identity connection. Under these circumstances, it can be
+replaced by RepConvN that contains no identity connections.
+mance of RepConv and different architectures, we ﬁnd that
+the identity connection in RepConv destroys the residual in
+ResNet and the concatenation in DenseNet, which provides
+more diversity of gradients for different feature maps. For
+the above reasons, we use RepConv without identity con-
+nection (RepConvN) to design the architecture of planned
+re-parameterization model. In our thinking, when a convo-
+lutional layer with residual or concatenation is replaced by
+re-parameterization convolution, there should be no iden-
+tity connection. Figure 4 shows examples of how our de-
+signed “planned re-parameterization model” is applied in
+PlainNet and ResNet.
+As for the complete planned re-
+parameterization model experiment in residual-based model
+and concatenation-based model, it will be presented in the
+ablation study session.
+4.2. Coarse for auxiliary and ﬁne for lead loss
+Deep supervision [37] is a technique used for training
+deep networks. Its main concept is to add extra auxiliary
+7467
+
+--- Strana 5 ---
+Figure 5. Coarse for auxiliary and ﬁne for lead head label assigner. Compare with normal model (a), the schema in (b) has auxiliary head.
+Different from the usual independent label assigner (c), we propose (d) lead head guided label assigner and (e) coarse-to-ﬁne lead head
+guided label assigner. The proposed label assigner is optimized by lead head prediction and the ground truth to get the labels of training
+lead head and auxiliary head at the same time. The detailed implementation and constraint details will be elaborated in Appendix.
+head in the middle layers of the network, and the shallow
+network weights with assistant loss as the guide. Even for
+architectures such as ResNet [25] and DenseNet [31] which
+usually converge well, deep supervision [45, 48, 62, 64, 67,
+80, 84, 95] can still signiﬁcantly improve the performance
+of the model on many tasks. Figure 5 (a) and (b) show,
+respectively, the object detector architecture “without” and
+“with” deep supervision. In this paper, we call the head
+responsible for the ﬁnal output as the lead head, and the
+head used to assist training is called auxiliary head.
+Next we want to discuss the issue of label assignment. In
+the past, in the training of deep network, label assignment
+usually refers directly to the ground truth and generate hard
+label according to the given rules. However, in recent years,
+if we take object detection as an example, researchers often
+use the quality and distribution of prediction output by the
+network, and then consider together with the ground truth to
+use some calculation and optimization methods to generate
+a reliable soft label [7,16,19,35,40–42,58,87,88,96]. For
+example, YOLO [58] use IoU of prediction of bounding box
+regression and ground truth as the soft label of objectness.
+In this paper, we call the mechanism that considers the net-
+work prediction results together with the ground truth and
+then assigns soft labels as “label assigner.”
+Deep supervision needs to be trained on the target ob-
+jectives regardless of the circumstances of auxiliary head or
+lead head. During the development of soft label assigner re-
+lated techniques, we accidentally discovered a new deriva-
+tive issue, i.e., “How to assign soft label to auxiliary head
+and lead head ?” To the best of our knowledge, the rele-
+vant literature has not explored this issue so far. The results
+of the most popular method at present is shown in Figure 5
+(c), which is to separate auxiliary head and lead head, and
+then use their own prediction results and the ground truth
+to execute label assignment. The method proposed in this
+paper is a new label assignment method that guides both
+auxiliary head and lead head by the lead head prediction.
+In other words, we use lead head prediction as guidance to
+generate coarse-to-ﬁne hierarchical labels, which are used
+for auxiliary head and lead head learning, respectively. The
+two proposed deep supervision label assignment strategies
+are shown in Figure 5 (d) and (e), respectively.
+Lead head guided label assigner is mainly calculated
+based on the prediction result of the lead head and the
+ground truth, and generate soft label through the optimiza-
+tion process. This set of soft labels will be used as the tar-
+get training model for both auxiliary head and lead head.
+The reason to do this is because lead head has a relatively
+strong learning capability, so the soft label generated from it
+should be more representative of the distribution and corre-
+lation between the source data and the target. Furthermore,
+we can view such learning as a kind of generalized residual
+learning. By letting the shallower auxiliary head directly
+learn the information that lead head has learned, lead head
+will be more able to focus on learning residual information
+that has not yet been learned.
+Coarse-to-ﬁne lead head guided label assigner also
+used the predicted result of the lead head and the ground
+truth to generate soft label. However, in the process we gen-
+erate two different sets of soft label, i.e., coarse label and
+ﬁne label, where ﬁne label is the same as the soft label gen-
+erated by lead head guided label assigner, and coarse label
+is generated by allowing more grids to be treated as posi-
+tive target by relaxing the constraints of the positive sample
+assignment process. The reason for this is that the learning
+ability of an auxiliary head is not as strong as that of a lead
+head, and in order to avoid losing the information that needs
+to be learned, we will focus on optimizing the recall of aux-
+iliary head in the object detection task. As for the output
+of lead head, we can ﬁlter the high precision results from
+the high recall results as the ﬁnal output. However, we must
+note that if the additional weight of coarse label is close to
+that of ﬁne label, it may produce bad prior at ﬁnal predic-
+tion. Therefore, in order to make those extra coarse positive
+grids have less impact, we put restrictions in the decoder, so
+that the extra coarse positive grids cannot produce soft label
+perfectly. This mechanism allows the importance of ﬁne la-
+bel and coarse label to be dynamically adjusted during the
+learning process, and makes the optimizable upper bound
+of ﬁne label always higher than coarse label.
+7468
+
+--- Strana 6 ---
+Table 1. Comparison of baseline object detectors.
+Model
+#Param.
+FLOPs
+Size
+APval
+APval
+50
+APval
+75
+APval
+S
+APval
+M
+APval
+L
+YOLOv4 [2]
+64.4M
+142.8G
+640
+49.7%
+68.2%
+54.3%
+32.9%
+54.8%
+63.7%
+YOLOR-u5 (r6.1) [79]
+46.5M
+109.1G
+640
+50.2%
+68.7%
+54.6%
+33.2%
+55.5%
+63.7%
+YOLOv4-CSP [76]
+52.9M
+120.4G
+640
+50.3%
+68.6%
+54.9%
+34.2%
+55.6%
+65.1%
+YOLOR-CSP [79]
+52.9M
+120.4G
+640
+50.8%
+69.5%
+55.3%
+33.7%
+56.0%
+65.4%
+YOLOv7
+36.9M
+104.7G
+640
+51.2%
+69.7%
+55.5%
+35.2%
+56.0%
+66.7%
+improvement
+-43%
+-15%
+-
++0.4
++0.2
++0.2
++1.5
+=
++1.3
+YOLOR-CSP-X [79]
+96.9M
+226.8G
+640
+52.7%
+71.3%
+57.4%
+36.3%
+57.5%
+68.3%
+YOLOv7-X
+71.3M
+189.9G
+640
+52.9%
+71.1%
+57.5%
+36.9%
+57.7%
+68.6%
+improvement
+-36%
+-19%
+-
++0.2
+-0.2
++0.1
++0.6
++0.2
++0.3
+YOLOv4-tiny [76]
+6.1
+6.9
+416
+24.9%
+42.1%
+25.7%
+8.7%
+28.4%
+39.2%
+YOLOv7-tiny
+6.2
+5.8
+416
+35.2%
+52.8%
+37.3%
+15.7%
+38.0%
+53.4%
+improvement
++2%
+-19%
+-
++10.3
++10.7
++11.6
++7.0
++9.6
++14.2
+YOLOv4-tiny-3l [76]
+8.7
+5.2
+320
+30.8%
+47.3%
+32.2%
+10.9%
+31.9%
+51.5%
+YOLOv7-tiny
+6.2
+3.5
+320
+30.8%
+47.3%
+32.2%
+10.0%
+31.9%
+52.2%
+improvement
+-39%
+-49%
+-
+=
+=
+=
+-0.9
+=
++0.7
+YOLOR-E6 [79]
+115.8M
+683.2G
+1280
+55.7%
+73.2%
+60.7%
+40.1%
+60.4%
+69.2%
+YOLOv7-E6
+97.2M
+515.2G
+1280
+55.9%
+73.5%
+61.1%
+40.6%
+60.3%
+70.0%
+improvement
+-19%
+-33%
+-
++0.2
++0.3
++0.4
++0.5
+-0.1
++0.8
+YOLOR-D6 [79]
+151.7M
+935.6G
+1280
+56.1%
+73.9%
+61.2%
+42.4%
+60.5%
+69.9%
+YOLOv7-D6
+154.7M
+806.8G
+1280
+56.3%
+73.8%
+61.4%
+41.3%
+60.6%
+70.1%
+YOLOv7-E6E
+151.7M
+843.2G
+1280
+56.8%
+74.4%
+62.1%
+40.8%
+62.1%
+70.6%
+improvement
+=
+-11%
+-
++0.7
++0.5
++0.9
+-1.6
++1.6
++0.7
+4.3. Other trainable bag-of-freebies
+In this section we will list some trainable bag-of-
+freebies.
+These freebies are some of the tricks we used
+in training, but the original concepts were not proposed
+by us. The training details of these freebies will be elab-
+orated in the Appendix, including (1) Batch normalization
+in conv-bn-activation topology: This part mainly connects
+batch normalization layer directly to convolutional layer.
+The purpose of this is to integrate the mean and variance
+of batch normalization into the bias and weight of convolu-
+tional layer at the inference stage. (2) Implicit knowledge
+in YOLOR [79] combined with convolution feature map in
+addition and multiplication manner: Implicit knowledge in
+YOLOR can be simpliﬁed to a vector by pre-computing at
+the inference stage. This vector can be combined with the
+bias and weight of the previous or subsequent convolutional
+layer. (3) EMA model: EMA is a technique used in mean
+teacher [72], and in our system we use EMA model purely
+as the ﬁnal inference model.
+5. Experiments
+5.1. Experimental setup
+MS COCO dataset is used to conduct experiments. All
+our models were trained from scratch. We used train 2017
+set for training, and then used val 2017 set for veriﬁcation
+and choosing hyperparameters. Finally, test 2017 set is used
+to compare with the state-of-the-art object detectors. De-
+tailed training settings are described in Appendix.
+We designed basic model for edge GPU, normal GPU,
+and cloud GPU, and they are respectively called YOLOv7-
+tiny, YOLOv7, and YOLOv7-W6.
+We also use basic
+model for model scaling for different service requirements.
+For YOLOv7, we do stack scaling on neck, and use the
+proposed compound scaling method to perform scaling-
+up of the depth and width of the entire model to obtain
+YOLOv7-X. As for YOLOv7-W6, we use the newly pro-
+posed compound scaling method to obtain YOLOv7-E6 and
+YOLOv7-D6. In addition, we use the proposed E-ELAN for
+YOLOv7-E6, and thereby complete YOLOv7-E6E. Since
+YOLOv7-tiny is an edge GPU-oriented architecture, it will
+use leaky ReLU as activation function. As for other models
+we use SiLU as activation function. We will describe the
+scaling factor of each model in detail in Appendix.
+5.2. Baselines
+We choose previous version of YOLO [2, 76] and state-
+of-the-art object detector YOLOR [79] as our baselines. Ta-
+ble 1 shows the comparison of our proposed YOLOv7 mod-
+els and those baseline that are trained with the same settings.
+From the results we see that YOLOv7-based models out-
+perform the baseline models in terms of number of pa-
+rameters, amount of computation, and accuracy. For mod-
+els designed for normal GPU, YOLOv7 and YOLOv7x re-
+duce about 40% parameters and 20% computations, and
+still achieve higher AP. For model designed for edge GPU,
+YOLOv7-tiny reduce 39% parameters and 49% computa-
+tion and achieve same AP as YOLOv4-tiny-3l.
+7469
+
+--- Strana 7 ---
+Table 2. Comparison of state-of-the-art object detectors. (no-TRT, without extra object detection training data)
+Model
+#Param.
+FLOPs
+Size
+FPSV 100
+APtest / APval
+APtest
+50
+APtest
+75
+YOLOv7-tiny-SiLU
+6.2M
+13.8G
+640
+273
+38.7% / 38.7%
+56.7%
+41.7%
+PPYOLOE-S [83]
+7.9M
+17.4G
+640
+208
+43.1% / 42.7%
+60.5%
+46.6%
+YOLOv5-N (r6.1) [22]
+1.9M
+4.5G
+640
+159
+- / 28.0%
+-
+-
+YOLOv5-S (r6.1) [22]
+7.2M
+16.5G
+640
+156
+- / 37.4%
+-
+-
+PPYOLOE-M [83]
+23.4M
+49.9G
+640
+123
+48.9% / 48.6%
+66.5%
+53.0%
+YOLOv5-N6 (r6.1) [22]
+3.2M
+18.4G
+1280
+123
+- / 36.0%
+-
+-
+YOLOv5-S6 (r6.1) [22]
+12.6M
+67.2G
+1280
+122
+- / 44.8%
+-
+-
+YOLOv5-M (r6.1) [22]
+21.2M
+49.0G
+640
+122
+- / 45.4%
+-
+-
+YOLOv7
+36.9M
+104.7G
+640
+118
+51.4% / 51.2%
+69.7%
+55.9%
+YOLOR-CSP [79]
+52.9M
+120.4G
+640
+106
+51.1% / 50.8%
+69.6%
+55.7%
+YOLOX-S [20]
+9.0M
+26.8G
+640
+102
+40.5% / 40.5%
+-
+-
+YOLOv5-L (r6.1) [22]
+46.5M
+109.1G
+640
+99
+- / 49.0%
+-
+-
+YOLOv7-X
+71.3M
+189.9G
+640
+98
+53.1% / 52.9%
+71.2%
+57.8%
+YOLOv5-M6 (r6.1) [22]
+35.7M
+200.0G
+1280
+90
+- / 51.3%
+-
+-
+YOLOR-CSP-X [79]
+96.9M
+226.8G
+640
+87
+53.0% / 52.7%
+71.4%
+57.9%
+YOLOv5-X (r6.1) [22]
+86.7M
+205.7G
+640
+83
+- / 50.7%
+-
+-
+YOLOX-M [20]
+25.3M
+73.8G
+640
+81
+47.2% / 46.9%
+-
+-
+YOLOv7-W6
+70.4M
+360.0G
+1280
+80
+54.9% / 54.6%
+72.6%
+60.1%
+PPYOLOE-L [83]
+52.2M
+110.1G
+640
+78
+51.4% / 50.9%
+68.9%
+55.6%
+YOLOR-P6 [79]
+37.2M
+325.6G
+1280
+76
+53.9% / 53.5%
+71.4%
+58.9%
+YOLOX-L [20]
+54.2M
+155.6G
+640
+69
+50.1% / 49.7%
+-
+-
+YOLOR-W6 [79]
+79.8G
+453.2G
+1280
+66
+55.2% / 54.8%
+72.7%
+60.5%
+YOLOv5-L6 (r6.1) [22]
+76.8M
+445.6G
+1280
+63
+- / 53.7%
+-
+-
+YOLOX-X [20]
+99.1M
+281.9G
+640
+58
+51.5% / 51.1%
+-
+-
+YOLOv7-E6
+97.2M
+515.2G
+1280
+54
+56.0% / 55.9%
+73.5%
+61.2%
+YOLOR-E6 [79]
+115.8M
+683.2G
+1280
+45
+55.8% / 55.7%
+73.4%
+61.1%
+PPYOLOE-X [83]
+98.4M
+206.6G
+640
+45
+52.2% / 51.9%
+69.9%
+56.5%
+YOLOv7-D6
+154.7M
+806.8G
+1280
+43
+56.6% / 56.3%
+74.0%
+61.8%
+YOLOv5-X6 (r6.1) [22]
+140.7M
+839.2G
+1280
+38
+- / 55.0%
+-
+-
+YOLOv7-E6E
+151.7M
+843.2G
+1280
+35
+56.8% / 56.8%
+74.4%
+62.1%
+YOLOR-D6 [79]
+151.7M
+935.6G
+1280
+34
+56.5% / 56.1%
+74.1%
+61.9%
+Deformable DETR [97]
+40.0M
+173.0G
+-
+19
+- / 46.2%
+-
+-
+Swin-B (C-M-RCNN) [50]
+145.0M
+982.0G
+1333
+11.6
+- / 51.9%
+-
+-
+EfﬁcientDet-D7x [71]
+77.0M
+410.0G
+1536
+6.5
+55.1% / 54.4%
+72.4%
+58.4%
+ViT-Adapter-B [6]
+122.0M
+997.0G
+-
+4.4
+- / 50.8%
+-
+-
+Dual-Swin-B (HTC) [45]
+235.0M
+-
+1600
+2.5
+58.7% / 58.4%
+-
+-
+5.3. Comparison with state-of-the-arts
+We compare the proposed method with state-of-the-art
+object detectors, and the results are shown in Table 2. From
+Table 2 we know that the proposed method has the best
+speed-accuracy trade-off comprehensively.
+5.4. Ablation study
+5.4.1
+Proposed compound scaling method
+Table 3 shows the results obtained when using different
+model scaling strategies for scaling up. Among them, our
+proposed compound scaling method is to scale up the depth
+of computational block by 1.5 times and the width of tran-
+sition block by 1.25 times. It can be seen from the results
+of Table 3 that our proposed compound scaling strategy can
+utilize parameters and computation more efﬁciently.
+5.4.2
+Proposed planned re-parameterization model
+In order to verify the generality of our proposed planed re-
+parameterization model, we use it on concatenation-based
+Table 3. Ablation study on proposed model scaling.
+Model
+#Param. FLOPs Size APval APval
+50
+APval
+75
+base (v7-X light)
+47.0M
+125.5G 640 51.7% 70.1% 56.0%
+width only (1.25 w)
+73.4M
+195.5G 640 52.4% 70.9% 57.1%
+depth only (2.0 d)
+69.3M
+187.6G 640 52.7% 70.8% 57.3%
+compound (v7-X)
+71.3M
+189.9G 640 52.9% 71.1% 57.5%
+improvement
+-
+-
+-
++1.2
++1.0
++1.5
+model and residual-based model respectively for veriﬁca-
+tion.
+The concatenation-based model and residual-based
+model we chose for veriﬁcation are 3-stacked ELAN and
+CSPDarknet, respectively.
+In the experiment of concatenation-based model, we re-
+place the 3 × 3 convolutional layers in different positions in
+3-stacked ELAN with RepConv, and the detailed conﬁgura-
+tion is shown in Figure 6. From the results shown in Table 4
+we see that all higher AP values are present on our proposed
+planned re-parameterization model.
+In the experiment of residual-based model, we design a
+reversed dark block to ﬁt our design strategy for the exper-
+7470
+
+--- Strana 8 ---
+Figure 6. Planned RepConv 3-stacked ELAN. Blue circles are the
+position we replace Conv by RepConv.
+Table 4. Ablation study on planned RepConcatenation model.
+Model
+APval
+APval
+50
+APval
+75
+APval
+S
+APval
+M
+APval
+L
+base (3-S ELAN) 52.26% 70.41% 56.77% 35.81% 57.00% 67.59%
+Figure 6 (a)
+52.18% 70.34% 56.90% 35.71% 56.83% 67.51%
+Figure 6 (b)
+52.30% 70.30% 56.92% 35.76% 56.95% 67.74%
+Figure 6 (c)
+52.33% 70.56% 56.91% 35.90% 57.06% 67.50%
+Figure 6 (d)
+52.17% 70.32% 56.82% 35.33% 57.06% 68.09%
+Figure 6 (e)
+52.23% 70.20% 56.81% 35.34% 56.97% 66.88%
+iment, whose architecture is shown in Figure 7. The ex-
+periment results illustrated in Table 5 fully conﬁrm that the
+proposed planned re-parameterization model is equally ef-
+fective on residual-based model. We ﬁnd that the design of
+RepCSPResNet [83] also ﬁts our design pattern.
+Figure 7. Reversed CSPDarknet. We reverse the position of 1 × 1
+and 3 × 3 convolutional layer in dark block to ﬁt our planned re-
+parameterization model design strategy.
+Table 5. Ablation study on planned RepResidual model.
+Model
+APval APval
+50
+APval
+75
+APval
+S
+APval
+M
+APval
+L
+base (YOLOR-W6) 54.82% 72.39% 59.95% 39.68% 59.38% 68.30%
+RepCSP
+54.67% 72.50% 59.58% 40.22% 59.61% 67.87%
+RCSP
+54.36% 71.95% 59.54% 40.15% 59.02% 67.44%
+RepRCSP
+54.85%72.51%60.08%40.53% 59.52% 68.06%
+base (YOLOR-CSP) 50.81% 69.47% 55.28% 33.74% 56.01% 65.38%
+RepRCSP
+50.91%69.54%55.55%34.44% 55.74% 65.46%
+5.4.3
+Proposed assistant loss for auxiliary head
+In the assistant loss for auxiliary head experiments, we com-
+pare the general independent label assignment for lead head
+and auxiliary head methods, and we also compare the two
+proposed lead guided label assignment methods. We show
+all comparison results in Table 6. From the results listed in
+Table 6, it is clear that any model that increases assistant
+loss can signiﬁcantly improve the overall performance.
+Table 6. Ablation study on proposed auxiliary head.
+Model
+Size
+APval
+APval
+50
+APval
+75
+base (v7-E6)
+1280
+55.6%
+73.2%
+60.7%
+independent
+1280
+55.8%
+73.4%
+60.9%
+lead guided
+1280
+55.9%
+73.5%
+61.0%
+coarse-to-ﬁne lead guided
+1280
+55.9%
+73.5%
+61.1%
+In
+Table
+7
+we
+further
+compared
+the
+results
+of
+with/without the introduction of upper bound constraint.
+Judging from the numbers in the Table, the method of con-
+straining the upper bound of objectness by the distance from
+the center of the object can achieve better performance.
+Table 7. Ablation study on constrained auxiliary head.
+Model
+Size
+APval
+APval
+50
+APval
+75
+base (v7-E6)
+1280
+55.6%
+73.2%
+60.7%
+aux without constraint
+1280
+55.9%
+73.5%
+61.0%
+aux with constraint
+1280
+55.9%
+73.5%
+61.1%
+Directly connect auxiliary head to the pyramid in the
+middle layer for training can make up for information that
+may be lost in the next level pyramid prediction. To solve
+this issue, our approach is to connect auxiliary head after
+one of the sets of feature map before merging cardinality of
+E-ELAN. Table 8 shows the results obtained using coarse-
+to-ﬁne lead guided and partial coarse-to-ﬁne lead guided
+methods. Obviously, the partial coarse-to-ﬁne lead guided
+method has a better auxiliary effect.
+Table 8. Ablation study on partial auxiliary head.
+Model
+Size
+APval
+APval
+50
+APval
+75
+base (v7-E6E)
+1280
+56.3%
+74.0%
+61.5%
+aux
+1280
+56.5%
+74.0%
+61.6%
+partial aux
+1280
+56.8%
+74.4%
+62.1%
+6. Conclusions
+In this paper we propose a new architecture of real-
+time object detector and the corresponding model scaling
+method. Furthermore, we ﬁnd that the evolving process
+of object detection methods generates new research top-
+ics. During the research process, we found the replacement
+problem of re-parameterization module and the allocation
+problem of dynamic label assignment. To solve the prob-
+lem, we propose the trainable bag-of-freebies method to en-
+hance the accuracy of object detection. Based on the above,
+we have developed the YOLOv7 series of object detection
+systems, which receives the state-of-the-art results.
+7. Acknowledgements
+The authors wish to thank National Center for High-
+performance Computing (NCHC) for providing computa-
+tional and storage resources.
+7471
+
+--- Strana 9 ---
+References
+[1] Irwan Bello, William Fedus, Xianzhi Du, Ekin Dogus
+Cubuk, Aravind Srinivas, Tsung-Yi Lin, Jonathon Shlens,
+and Barret Zoph. Revisiting ResNets: Improved training and
+scaling strategies. Advances in Neural Information Process-
+ing Systems (NeurIPS), 34, 2021. 2
+[2] Alexey
+Bochkovskiy,
+Chien-Yao
+Wang,
+and
+Hong-
+Yuan Mark Liao. YOLOv4: Optimal speed and accuracy of
+object detection. arXiv preprint arXiv:2004.10934, 2020. 2,
+6
+[3] Yue Cao, Thomas Andrew Geddes, Jean Yee Hwa Yang, and
+Pengyi Yang. Ensemble deep learning in bioinformatics. Na-
+ture Machine Intelligence, 2(9):500–508, 2020. 2
+[4] Nicolas Carion, Francisco Massa, Gabriel Synnaeve, Nicolas
+Usunier, Alexander Kirillov, and Sergey Zagoruyko. End-
+to-end object detection with transformers. In Proceedings
+of the European Conference on Computer Vision (ECCV),
+pages 213–229, 2020.
+[5] Kean Chen, Weiyao Lin, Jianguo Li, John See, Ji Wang, and
+Junni Zou. AP-loss for accurate one-stage object detection.
+IEEE Transactions on Pattern Analysis and Machine Intelli-
+gence (TPAMI), 43(11):3782–3798, 2020. 2
+[6] Zhe Chen, Yuchen Duan, Wenhai Wang, Junjun He, Tong
+Lu, Jifeng Dai, and Yu Qiao. Vision transformer adapter for
+dense predictions. In International Conference on Learning
+Representations (ICLR), 2023. 7
+[7] Jiwoong Choi, Dayoung Chun, Hyun Kim, and Hyuk-Jae
+Lee. Gaussian YOLOv3: An accurate and fast object de-
+tector using localization uncertainty for autonomous driving.
+In Proceedings of the IEEE/CVF International Conference
+on Computer Vision (ICCV), pages 502–511, 2019. 5
+[8] Xiyang Dai, Yinpeng Chen, Bin Xiao, Dongdong Chen,
+Mengchen Liu, Lu Yuan, and Lei Zhang. Dynamic head:
+Unifying object detection heads with attentions. In Proceed-
+ings of the IEEE/CVF Conference on Computer Vision and
+Pattern Recognition (CVPR), pages 7373–7382, 2021. 2
+[9] Xiaohan Ding, Honghao Chen, Xiangyu Zhang, Kaiqi
+Huang,
+Jungong
+Han,
+and
+Guiguang
+Ding.
+Re-
+parameterizing your optimizers rather than architectures.
+In International Conference on Learning Representations
+(ICLR), 2023. 2
+[10] Xiaohan Ding, Yuchen Guo, Guiguang Ding, and Jungong
+Han. ACNet: Strengthening the kernel skeletons for power-
+ful CNN via asymmetric convolution blocks. In Proceedings
+of the IEEE/CVF International Conference on Computer Vi-
+sion (ICCV), pages 1911–1920, 2019. 2
+[11] Xiaohan Ding, Xiangyu Zhang, Jungong Han, and Guiguang
+Ding. Diverse branch block: Building a convolution as an
+inception-like unit. In Proceedings of the IEEE/CVF Confer-
+ence on Computer Vision and Pattern Recognition (CVPR),
+pages 10886–10895, 2021. 2
+[12] Xiaohan Ding, Xiangyu Zhang, Ningning Ma, Jungong Han,
+Guiguang Ding, and Jian Sun.
+RepVGG: Making VGG-
+style convnets great again. In Proceedings of the IEEE/CVF
+Conference on Computer Vision and Pattern Recognition
+(CVPR), pages 13733–13742, 2021. 2, 4
+[13] Xiaohan Ding, Xiangyu Zhang, Yizhuang Zhou, Jungong
+Han, Guiguang Ding, and Jian Sun. Scaling up your kernels
+to 31x31: Revisiting large kernel design in CNNs. In Pro-
+ceedings of the IEEE/CVF Conference on Computer Vision
+and Pattern Recognition (CVPR), 2022. 2
+[14] Piotr Doll´ar, Mannat Singh, and Ross Girshick.
+Fast and
+accurate model scaling. In Proceedings of the IEEE/CVF
+Conference on Computer Vision and Pattern Recognition
+(CVPR), pages 924–932, 2021. 2, 3
+[15] Xianzhi Du, Barret Zoph, Wei-Chih Hung, and Tsung-Yi
+Lin. Simple training strategies and model scaling for object
+detection. arXiv preprint arXiv:2107.00057, 2021. 2
+[16] Chengjian Feng, Yujie Zhong, Yu Gao, Matthew R Scott,
+and Weilin Huang. TOOD: Task-aligned one-stage object
+detection.
+In Proceedings of the IEEE/CVF International
+Conference on Computer Vision (ICCV), pages 3490–3499,
+2021. 2, 5
+[17] Di Feng, Christian Haase-Sch¨utz, Lars Rosenbaum, Heinz
+Hertlein, Claudius Glaeser, Fabian Timm, Werner Wies-
+beck, and Klaus Dietmayer. Deep multi-modal object de-
+tection and semantic segmentation for autonomous driving:
+Datasets, methods, and challenges. IEEE Transactions on
+Intelligent Transportation Systems, 22(3):1341–1360, 2020.
+1
+[18] Timur Garipov,
+Pavel Izmailov,
+Dmitrii Podoprikhin,
+Dmitry P Vetrov, and Andrew G Wilson.
+Loss surfaces,
+mode connectivity, and fast ensembling of DNNs. Advances
+in Neural Information Processing Systems (NeurIPS), 31,
+2018. 2
+[19] Zheng Ge, Songtao Liu, Zeming Li, Osamu Yoshie, and Jian
+Sun. OTA: Optimal transport assignment for object detec-
+tion. In Proceedings of the IEEE/CVF Conference on Com-
+puter Vision and Pattern Recognition (CVPR), pages 303–
+312, 2021. 2, 5
+[20] Zheng Ge, Songtao Liu, Feng Wang, Zeming Li, and Jian
+Sun.
+YOLOX: Exceeding YOLO series in 2021.
+arXiv
+preprint arXiv:2107.08430, 2021. 1, 2, 7
+[21] Golnaz Ghiasi, Tsung-Yi Lin, and Quoc V Le. NAS-FPN:
+Learning scalable feature pyramid architecture for object de-
+tection.
+In Proceedings of the IEEE/CVF Conference on
+Computer Vision and Pattern Recognition (CVPR), pages
+7036–7045, 2019. 2
+[22] Jocher Glenn. YOLOv5 release v6.1. https://github.
+com/ultralytics/yolov5/releases/tag/v6.
+1, 2022. 2, 7
+[23] Shuxuan Guo, Jose M Alvarez, and Mathieu Salzmann. Ex-
+pandNets: Linear over-parameterization to train compact
+convolutional networks.
+Advances in Neural Information
+Processing Systems (NeurIPS), 33:1298–1310, 2020. 2
+[24] Kai Han, Yunhe Wang, Qi Tian, Jianyuan Guo, Chunjing Xu,
+and Chang Xu. GhostNet: More features from cheap opera-
+tions. In Proceedings of the IEEE/CVF Conference on Com-
+puter Vision and Pattern Recognition (CVPR), pages 1580–
+1589, 2020. 1
+[25] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.
+Deep residual learning for image recognition. In Proceed-
+ings of the IEEE/CVF Conference on Computer Vision and
+Pattern Recognition (CVPR), pages 770–778, 2016. 1, 4, 5
+7472
+
+--- Strana 10 ---
+[26] Andrew Howard, Mark Sandler, Grace Chu, Liang-Chieh
+Chen, Bo Chen, Mingxing Tan, Weijun Wang, Yukun Zhu,
+Ruoming Pang, Vijay Vasudevan, et al. Searching for Mo-
+bileNetV3.
+In Proceedings of the IEEE/CVF Conference
+on Computer Vision and Pattern Recognition (CVPR), pages
+1314–1324, 2019. 1
+[27] Andrew G Howard, Menglong Zhu, Bo Chen, Dmitry
+Kalenichenko, Weijun Wang, Tobias Weyand, Marco An-
+dreetto, and Hartwig Adam. MobileNets: Efﬁcient convolu-
+tional neural networks for mobile vision applications. arXiv
+preprint arXiv:1704.04861, 2017. 1
+[28] Mu Hu, Junyi Feng, Jiashen Hua, Baisheng Lai, Jianqiang
+Huang, Xiaojin Gong, and Xiansheng Hua. Online convolu-
+tional re-parameterization. In Proceedings of the IEEE/CVF
+Conference on Computer Vision and Pattern Recognition
+(CVPR), 2022. 2
+[29] Miao Hu, Yali Li, Lu Fang, and Shengjin Wang. A2-FPN:
+Attention aggregation based feature pyramid network for
+instance segmentation.
+In Proceedings of the IEEE/CVF
+Conference on Computer Vision and Pattern Recognition
+(CVPR), pages 15343–15352, 2021. 2
+[30] Gao Huang, Yixuan Li, Geoff Pleiss, Zhuang Liu, John E
+Hopcroft, and Kilian Q Weinberger. Snapshot ensembles:
+Train 1, get m for free.
+In International Conference on
+Learning Representations (ICLR), 2017. 2
+[31] Gao Huang, Zhuang Liu, Laurens Van Der Maaten, and Kil-
+ian Q Weinberger.
+Densely connected convolutional net-
+works.
+In Proceedings of the IEEE/CVF Conference on
+Computer Vision and Pattern Recognition (CVPR), pages
+4700–4708, 2017. 2, 4, 5
+[32] Pavel Izmailov, Dmitrii Podoprikhin, Timur Garipov, Dmitry
+Vetrov, and Andrew Gordon Wilson.
+Averaging weights
+leads to wider optima and better generalization. In Confer-
+ence on Uncertainty in Artiﬁcial Intelligence (UAI), 2018. 2
+[33] Paul F Jaeger, Simon AA Kohl, Sebastian Bickelhaupt,
+Fabian Isensee, Tristan Anselm Kuder, Heinz-Peter Schlem-
+mer, and Klaus H Maier-Hein. Retina U-Net: Embarrass-
+ingly simple exploitation of segmentation supervision for
+medical object detection. In Machine Learning for Health
+Workshop, pages 171–183, 2020. 1
+[34] Hakan Karaoguz and Patric Jensfelt. Object detection ap-
+proach for robot grasp detection. In IEEE International Con-
+ference on Robotics and Automation (ICRA), pages 4953–
+4959, 2019. 1
+[35] Kang Kim and Hee Seok Lee. Probabilistic anchor assign-
+ment with iou prediction for object detection. In Proceed-
+ings of the European conference on computer vision (ECCV),
+pages 355–371, 2020. 5
+[36] Alexander Kirillov, Ross Girshick, Kaiming He, and Piotr
+Doll´ar. Panoptic feature pyramid networks. In Proceedings
+of the IEEE/CVF Conference on Computer Vision and Pat-
+tern Recognition (CVPR), pages 6399–6408, 2019. 2
+[37] Chen-Yu Lee, Saining Xie, Patrick Gallagher, Zhengyou
+Zhang, and Zhuowen Tu. Deeply-supervised nets. In Ar-
+tiﬁcial Intelligence and Statistics, pages 562–570, 2015. 4
+[38] Youngwan Lee, Joong-won Hwang, Sangrok Lee, Yuseok
+Bae, and Jongyoul Park. An energy and GPU-computation
+efﬁcient backbone network for real-time object detection. In
+Proceedings of the IEEE/CVF Conference on Computer Vi-
+sion and Pattern Recognition Workshops (CVPRW), pages
+0–0, 2019. 2, 3
+[39] Buyu Li, Wanli Ouyang, Lu Sheng, Xingyu Zeng, and
+Xiaogang Wang.
+GS3D: An efﬁcient 3d object detec-
+tion framework for autonomous driving. In Proceedings of
+the IEEE/CVF Conference on Computer Vision and Pattern
+Recognition (CVPR), pages 1019–1028, 2019. 1
+[40] Shuai Li, Chenhang He, Ruihuang Li, and Lei Zhang. A
+dual weighting label assignment scheme for object detection.
+In Proceedings of the IEEE/CVF Conference on Computer
+Vision and Pattern Recognition (CVPR), pages 9387–9396,
+2022. 2, 5
+[41] Xiang Li, Wenhai Wang, Xiaolin Hu, Jun Li, Jinhui Tang,
+and Jian Yang. Generalized focal loss v2: Learning reliable
+localization quality estimation for dense object detection. In
+Proceedings of the IEEE/CVF Conference on Computer Vi-
+sion and Pattern Recognition (CVPR), pages 11632–11641,
+2021. 5
+[42] Xiang Li, Wenhai Wang, Lijun Wu, Shuo Chen, Xiaolin Hu,
+Jun Li, Jinhui Tang, and Jian Yang. Generalized focal loss:
+Learning qualiﬁed and distributed bounding boxes for dense
+object detection. Advances in Neural Information Processing
+Systems (NeurIPS), 33:21002–21012, 2020. 5
+[43] Yanghao Li, Hanzi Mao, Ross Girshick, and Kaiming He.
+Exploring plain vision transformer backbones for object de-
+tection. In Proceedings of the European Conference on Com-
+puter Vision (ECCV), 2022. 2
+[44] Zhuoling Li, Minghui Dong, Shiping Wen, Xiang Hu, Pan
+Zhou, and Zhigang Zeng. CLU-CNNs: Object detection for
+medical images. Neurocomputing, 350:53–59, 2019. 1
+[45] Tingting Liang, Xiaojie Chu, Yudong Liu, Yongtao Wang,
+Zhi Tang, Wei Chu, Jingdong Chen, and Haibin Ling. CB-
+Net: A composite backbone network architecture for object
+detection. IEEE Transactions on Image Processing (TIP),
+2022. 5, 7
+[46] Ji Lin, Wei-Ming Chen, Han Cai, Chuang Gan, and Song
+Han. Memory-efﬁcient patch-based inference for tiny deep
+learning. Advances in Neural Information Processing Sys-
+tems (NeurIPS), 34:2346–2358, 2021. 1
+[47] Ji Lin, Wei-Ming Chen, Yujun Lin, Chuang Gan, Song Han,
+et al. MCUNet: Tiny deep learning on IoT devices. Ad-
+vances in Neural Information Processing Systems (NeurIPS),
+33:11711–11722, 2020. 1
+[48] Yuxuan Liu, Lujia Wang, and Ming Liu. YOLOStereo3D: A
+step back to 2D for efﬁcient stereo 3D detection. In IEEE In-
+ternational Conference on Robotics and Automation (ICRA),
+pages 13018–13024, 2021. 5
+[49] Ze Liu, Han Hu, Yutong Lin, Zhuliang Yao, Zhenda Xie,
+Yixuan Wei, Jia Ning, Yue Cao, Zheng Zhang, Li Dong, et al.
+Swin transformer v2: Scaling up capacity and resolution. In
+Proceedings of the IEEE/CVF Conference on Computer Vi-
+sion and Pattern Recognition (CVPR), 2022. 2
+[50] Ze Liu, Yutong Lin, Yue Cao, Han Hu, Yixuan Wei, Zheng
+Zhang, Stephen Lin, and Baining Guo. Swin transformer:
+Hierarchical vision transformer using shifted windows. In
+7473
+
+--- Strana 11 ---
+Proceedings of the IEEE/CVF International Conference on
+Computer Vision (ICCV), pages 10012–10022, 2021. 7
+[51] Rangi Lyu.
+NanoDet-Plus.
+https://github.com/
+RangiLyu/nanodet/releases/tag/v1.0.0-
+alpha-1, 2021. 1, 2
+[52] Ningning Ma, Xiangyu Zhang, Hai-Tao Zheng, and Jian Sun.
+ShufﬂeNet V2: Practical guidelines for efﬁcient CNN archi-
+tecture design. In Proceedings of the European Conference
+on Computer Vision (ECCV), pages 116–131, 2018. 1, 3
+[53] Kemal Oksuz, Baris Can Cam, Emre Akbas, and Sinan
+Kalkan.
+A ranking-based, balanced loss function unify-
+ing classiﬁcation and localisation in object detection. Ad-
+vances in Neural Information Processing Systems (NeurIPS),
+33:15534–15545, 2020. 2
+[54] Kemal Oksuz, Baris Can Cam, Emre Akbas, and Sinan
+Kalkan. Rank & sort loss for object detection and instance
+segmentation.
+In Proceedings of the IEEE/CVF Interna-
+tional Conference on Computer Vision (ICCV), pages 3009–
+3018, 2021. 2
+[55] Shuvo Kumar Paul, Muhammed Tawﬁq Chowdhury, Mircea
+Nicolescu, Monica Nicolescu, and David Feil-Seifer. Object
+detection and pose estimation from rgb and depth data for
+real-time, adaptive robotic grasping. In Advances in Com-
+puter Vision and Computational Biology, pages 121–142.
+2021. 1
+[56] Siyuan Qiao, Liang-Chieh Chen, and Alan Yuille.
+De-
+tectoRS: Detecting objects with recursive feature pyramid
+and switchable atrous convolution.
+In Proceedings of the
+IEEE/CVF Conference on Computer Vision and Pattern
+Recognition (CVPR), pages 10213–10224, 2021. 2
+[57] Ilija Radosavovic, Raj Prateek Kosaraju, Ross Girshick,
+Kaiming He, and Piotr Doll´ar. Designing network design
+spaces.
+In Proceedings of the IEEE/CVF Conference on
+Computer Vision and Pattern Recognition (CVPR), pages
+10428–10436, 2020. 2
+[58] Joseph Redmon, Santosh Divvala, Ross Girshick, and Ali
+Farhadi. You only look once: Uniﬁed, real-time object detec-
+tion. In Proceedings of the IEEE/CVF Conference on Com-
+puter Vision and Pattern Recognition (CVPR), pages 779–
+788, 2016. 2, 5
+[59] Joseph Redmon and Ali Farhadi. YOLO9000: better, faster,
+stronger. In Proceedings of the IEEE/CVF Conference on
+Computer Vision and Pattern Recognition (CVPR), pages
+7263–7271, 2017. 2
+[60] Joseph Redmon and Ali Farhadi. YOLOv3: An incremental
+improvement. arXiv preprint arXiv:1804.02767, 2018. 1, 2
+[61] Hamid Rezatoﬁghi, Nathan Tsoi, JunYoung Gwak, Amir
+Sadeghian, Ian Reid, and Silvio Savarese. Generalized in-
+tersection over union: A metric and a loss for bounding box
+regression.
+In Proceedings of the IEEE/CVF Conference
+on Computer Vision and Pattern Recognition (CVPR), pages
+658–666, 2019. 2
+[62] Byungseok Roh, JaeWoong Shin, Wuhyun Shin, and Sae-
+hoon Kim. Sparse DETR: Efﬁcient end-to-end object detec-
+tion with learnable sparsity. 2022. 5
+[63] Mark Sandler, Andrew Howard, Menglong Zhu, Andrey
+Zhmoginov, and Liang-Chieh Chen.
+MobileNetV2: In-
+verted residuals and linear bottlenecks. In Proceedings of
+the IEEE/CVF Conference on Computer Vision and Pattern
+Recognition (CVPR), pages 4510–4520, 2018. 1
+[64] Zhiqiang Shen, Zhuang Liu, Jianguo Li, Yu-Gang Jiang,
+Yurong Chen, and Xiangyang Xue. Object detection from
+scratch with deep supervision. IEEE Transactions on Pattern
+Analysis and Machine Intelligence (TPAMI), 42(2):398–412,
+2019. 5
+[65] Karen Simonyan and Andrew Zisserman. Very deep convo-
+lutional networks for large-scale image recognition. arXiv
+preprint arXiv:1409.1556, 2014. 4
+[66] Peize Sun, Rufeng Zhang, Yi Jiang, Tao Kong, Chenfeng
+Xu, Wei Zhan, Masayoshi Tomizuka, Lei Li, Zehuan Yuan,
+Changhu Wang, et al.
+Sparse R-CNN: End-to-end ob-
+ject detection with learnable proposals. In Proceedings of
+the IEEE/CVF Conference on Computer Vision and Pattern
+Recognition (CVPR), pages 14454–14463, 2021. 2
+[67] Christian Szegedy, Wei Liu, Yangqing Jia, Pierre Sermanet,
+Scott Reed, Dragomir Anguelov, Dumitru Erhan, Vincent
+Vanhoucke, and Andrew Rabinovich.
+Going deeper with
+convolutions. In Proceedings of the IEEE/CVF Conference
+on Computer Vision and Pattern Recognition (CVPR), pages
+1–9, 2015. 5
+[68] Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe, Jon
+Shlens, and Zbigniew Wojna. Rethinking the inception archi-
+tecture for computer vision. In Proceedings of the IEEE/CVF
+Conference on Computer Vision and Pattern Recognition
+(CVPR), pages 2818–2826, 2016. 2
+[69] Mingxing Tan and Quoc Le.
+EfﬁcientNet:
+Rethinking
+model scaling for convolutional neural networks. In Inter-
+national Conference on Machine Learning (ICML), pages
+6105–6114, 2019. 2, 3
+[70] Mingxing Tan and Quoc Le. EfﬁcientNetv2: Smaller models
+and faster training. In International Conference on Machine
+Learning (ICML), pages 10096–10106, 2021. 2
+[71] Mingxing Tan, Ruoming Pang, and Quoc V Le. EfﬁcientDet:
+Scalable and efﬁcient object detection. In Proceedings of
+the IEEE/CVF Conference on Computer Vision and Pattern
+Recognition (CVPR), pages 10781–10790, 2020. 2, 7
+[72] Antti Tarvainen and Harri Valpola. Mean teachers are better
+role models: Weight-averaged consistency targets improve
+semi-supervised deep learning results. Advances in Neural
+Information Processing Systems (NeurIPS), 30, 2017. 2, 6
+[73] Zhi Tian, Chunhua Shen, Hao Chen, and Tong He. FCOS:
+Fully convolutional one-stage object detection. In Proceed-
+ings of the IEEE/CVF International Conference on Com-
+puter Vision (ICCV), pages 9627–9636, 2019. 2
+[74] Zhi Tian, Chunhua Shen, Hao Chen, and Tong He. FCOS:
+A simple and strong anchor-free object detector.
+IEEE
+Transactions on Pattern Analysis and Machine Intelligence
+(TPAMI), 44(4):1922–1933, 2022. 2
+[75] Pavan Kumar Anasosalu Vasu, James Gabriel, Jeff Zhu, On-
+cel Tuzel, and Anurag Ranjan. An improved one millisecond
+mobile backbone. arXiv preprint arXiv:2206.04040, 2022. 2
+[76] Chien-Yao
+Wang,
+Alexey
+Bochkovskiy,
+and
+Hong-
+Yuan Mark Liao.
+Scaled-YOLOv4: Scaling cross stage
+partial network. In Proceedings of the IEEE/CVF Confer-
+ence on Computer Vision and Pattern Recognition (CVPR),
+pages 13029–13038, 2021. 2, 3, 6
+7474
+
+--- Strana 12 ---
+[77] Chien-Yao Wang, Hong-Yuan Mark Liao, Yueh-Hua Wu,
+Ping-Yang Chen, Jun-Wei Hsieh, and I-Hau Yeh. CSPNet: A
+new backbone that can enhance learning capability of CNN.
+In Proceedings of the IEEE/CVF Conference on Computer
+Vision and Pattern Recognition Workshops (CVPRW), pages
+390–391, 2020. 1
+[78] Chien-Yao Wang, Hong-Yuan Mark Liao, and I-Hau Yeh.
+Designing network design strategies through gradient path
+analysis. arXiv preprint arXiv:2211, 2022. 3
+[79] Chien-Yao Wang, I-Hau Yeh, and Hong-Yuan Mark Liao.
+You only learn one representation: Uniﬁed network for mul-
+tiple tasks. Journal of Information Science & Engineering,
+2023. 1, 2, 6, 7
+[80] Jianfeng Wang, Lin Song, Zeming Li, Hongbin Sun, Jian
+Sun, and Nanning Zheng.
+End-to-end object detection
+with fully convolutional network.
+In Proceedings of the
+IEEE/CVF Conference on Computer Vision and Pattern
+Recognition (CVPR), pages 15849–15858, 2021. 2, 5
+[81] Bichen Wu, Chaojian Li, Hang Zhang, Xiaoliang Dai,
+Peizhao Zhang, Matthew Yu, Jialiang Wang, Yingyan Lin,
+and Peter Vajda. FBNetv5: Neural architecture search for
+multiple tasks in one run. arXiv preprint arXiv:2111.10007,
+2021. 1
+[82] Yunyang Xiong, Hanxiao Liu, Suyog Gupta, Berkin Akin,
+Gabriel Bender, Yongzhe Wang, Pieter-Jan Kindermans,
+Mingxing Tan, Vikas Singh, and Bo Chen.
+MobileDets:
+Searching for object detection architectures for mobile ac-
+celerators.
+In Proceedings of the IEEE/CVF Conference
+on Computer Vision and Pattern Recognition (CVPR), pages
+3825–3834, 2021. 1
+[83] Shangliang Xu, Xinxin Wang, Wenyu Lv, Qinyao Chang,
+Cheng Cui, Kaipeng Deng, Guanzhong Wang, Qingqing
+Dang, Shengyu Wei, Yuning Du, et al.
+PP-YOLOE: An
+evolved version of YOLO. arXiv preprint arXiv:2203.16250,
+2022. 2, 7, 8
+[84] Zetong Yang, Yin Zhou, Zhifeng Chen, and Jiquan Ngiam.
+3D-MAN: 3D multi-frame attention network for object de-
+tection.
+In Proceedings of the IEEE/CVF Conference on
+Computer Vision and Pattern Recognition (CVPR), pages
+1863–1872, 2021. 5
+[85] Fisher Yu, Dequan Wang, Evan Shelhamer, and Trevor
+Darrell.
+Deep layer aggregation.
+In Proceedings of the
+IEEE/CVF Conference on Computer Vision and Pattern
+Recognition (CVPR), pages 2403–2412, 2018. 1
+[86] Guanghua Yu, Qinyao Chang, Wenyu Lv, Chang Xu, Cheng
+Cui, Wei Ji, Qingqing Dang, Kaipeng Deng, Guanzhong
+Wang, Yuning Du, et al.
+PP-PicoDet:
+A better real-
+time object detector on mobile devices.
+arXiv preprint
+arXiv:2111.00902, 2021. 1
+[87] Haoyang Zhang, Ying Wang, Feras Dayoub, and Niko Sun-
+derhauf. VarifocalNet: An IoU-aware dense object detector.
+In Proceedings of the IEEE/CVF Conference on Computer
+Vision and Pattern Recognition (CVPR), pages 8514–8523,
+2021. 5
+[88] Shifeng Zhang, Cheng Chi, Yongqiang Yao, Zhen Lei, and
+Stan Z Li.
+Bridging the gap between anchor-based and
+anchor-free detection via adaptive training sample selection.
+In Proceedings of the IEEE/CVF Conference on Computer
+Vision and Pattern Recognition (CVPR), pages 9759–9768,
+2020. 5
+[89] Xiangyu Zhang, Xinyu Zhou, Mengxiao Lin, and Jian Sun.
+ShufﬂeNet: An extremely efﬁcient convolutional neural net-
+work for mobile devices. In Proceedings of the IEEE/CVF
+Conference on Computer Vision and Pattern Recognition
+(CVPR), pages 6848–6856, 2018. 1
+[90] Yifu Zhang, Peize Sun, Yi Jiang, Dongdong Yu, Zehuan
+Yuan, Ping Luo, Wenyu Liu, and Xinggang Wang. BYTE-
+Track: Multi-object tracking by associating every detection
+box. In Proceedings of the European Conference on Com-
+puter Vision (ECCV), 2022. 1
+[91] Yifu Zhang, Chunyu Wang, Xinggang Wang, Wenjun Zeng,
+and Wenyu Liu. FAIRMOT: On the fairness of detection and
+re-identiﬁcation in multiple object tracking.
+International
+Journal of Computer Vision, 129(11):3069–3087, 2021. 1
+[92] Zhaohui Zheng, Ping Wang, Wei Liu, Jinze Li, Rongguang
+Ye, and Dongwei Ren. Distance-IoU loss: Faster and bet-
+ter learning for bounding box regression. In Proceedings of
+the AAAI Conference on Artiﬁcial Intelligence (AAAI), vol-
+ume 34, pages 12993–13000, 2020. 2
+[93] Dingfu Zhou, Jin Fang, Xibin Song, Chenye Guan, Junbo
+Yin, Yuchao Dai, and Ruigang Yang. IoU loss for 2D/3D
+object detection. In International Conference on 3D Vision
+(3DV), pages 85–94, 2019. 2
+[94] Xingyi Zhou, Dequan Wang, and Philipp Kr¨ahenb¨uhl. Ob-
+jects as points. arXiv preprint arXiv:1904.07850, 2019. 1,
+2
+[95] Zongwei Zhou, Md Mahfuzur Rahman Siddiquee, Nima
+Tajbakhsh, and Jianming Liang. UNet++: A nested U-Net
+architecture for medical image segmentation. In Deep Learn-
+ing in Medical Image Analysis and Multimodal Learning for
+Clinical Decision Support, pages 3–11. 2018. 5
+[96] Benjin Zhu, Jianfeng Wang, Zhengkai Jiang, Fuhang Zong,
+Songtao Liu, Zeming Li, and Jian Sun. AutoAssign: Differ-
+entiable label assignment for dense object detection. arXiv
+preprint arXiv:2007.03496, 2020. 2, 5
+[97] Xizhou Zhu, Weijie Su, Lewei Lu, Bin Li, Xiaogang Wang,
+and Jifeng Dai. Deformable DETR: Deformable transform-
+ers for end-to-end object detection. In Proceedings of the In-
+ternational Conference on Learning Representations (ICLR),
+2021. 7
+7475

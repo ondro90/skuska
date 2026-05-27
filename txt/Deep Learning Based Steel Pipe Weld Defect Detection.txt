@@ -1,0 +1,617 @@
+
+--- Strana 1 ---
+Deep Learning Based Steel Pipe Weld Defect Detection 
+Dingming Yanga , Yanrong Cuia* , Zeyu Yub and Hongqiang Yuanc 
+aSchool of Computer Science, Yangtze University, Jingzhou 434023, China; 
+bSchool of Electronics & Information, Yangtze University, Jingzhou 434023, China; 
+cSchool of Urban Construction, Yangtze University, Jingzhou 434000, China; 
+
+--- Strana 2 ---
+Deep Learning Based Steel Pipe Weld Defect Detection 
+Steel pipes are widely used in high-risk and high-pressure scenarios such as oil, 
+chemical, natural gas, shale gas, etc. If there is some defect in steel pipes, it will 
+lead to serious adverse consequences. Applying object detection in the field of 
+deep learning to pipe weld defect detection and identification can effectively 
+improve inspection efficiency and promote the development of industrial 
+automation. Most predecessors used traditional computer vision methods applied 
+to detect defects of steel pipe weld seams. However, traditional computer vision 
+methods rely on prior knowledge and can only detect defects with a single 
+feature, so it is difficult to complete the task of multi-defect classification, while 
+deep learning is end-to-end. In this paper, the state-of-the-art single-stage object 
+detection algorithm YOLOv5 is proposed to be applied to the field of steel pipe 
+weld defect detection, and compared with the two-stage representative object 
+detection algorithm Faster R-CNN. The experimental results show that applying 
+YOLOv5 to steel pipe weld defect detection can greatly improve the accuracy, 
+complete the multi-classification task, and meet the criteria of real-time detection. 
+Keywords: deep learning; object detection; YOLOv5; X-ray non-destructive 
+testing; weld defect 
+Introduction 
+Steel pipes are widely used in high-risk and high-pressure scenarios such as oil, 
+chemical, natural gas, shale gas, etc. If there is some defect in steel pipes, it will lead to 
+serious adverse consequences. With the growing demand for steel pipe in China, more 
+and more enterprises and even countries begin to pay attention to the quality and 
+performance of steel pipe, and the defect detection and evaluation technology of steel 
+pipe has become a research topic that researchers are keen on. At present, there are 
+manual testing and X-ray testing. X-ray testing is one of the main methods for industrial 
+non-destructive testing (NDT), and the test results have been used as an important basis 
+for defect analysis and quality assessment of weld. X-ray detection can effectively 
+detect the internal defects of steel pipe, but manual participation is still needed to 
+
+--- Strana 3 ---
+determine the type and location of weld defects of steel pipe (Yun et al. 
+2009).Therefore, Applying object detection in the field of deep learning to the defect 
+detection and identification of steel pipe welds can effectively improve the detection 
+efficiency and promote the development of industrial automation. 
+With the wide application of artificial intelligence in the field of computer 
+vision, machine learning and deep learning are widely used in object detection and 
+image classification. Most predecessors used traditional computer vision methods to 
+detect steel pipe weld defects (Yun et al. 2009; Wang et al. 2008; Malarvel et al. 2021; 
+Mahmoudi et al. 2009). For example, Wang et al. (2008) used Multi-thresholds+SVM 
+(Support Vector Machine) method to achieve an accuracy of 96.15% for X-ray image 
+detection of steel pipe weld cracks; Malarvel et al. (2021) used OSTU + MSVM-rbf 
+(Multi–class Support Vector Machine) method to achieve multi-class detection of weld 
+defects in X-ray images and achieved an accuracy of 95.23%. Nowadays, object 
+detection algorithms based on deep learning are constantly developing, the recognition 
+accuracy and detection time have been greatly improved compared with traditional 
+computer vision methods. Previous studies have achieved good results, but there are 
+also some shortcomings. Such as: 
+• Accuracy rate needs to be further improved; 
+• Different types of defects make it difficult to do multiple classifications with 
+traditional computer vision methods; 
+• Detection time is too long to achieve real-time detection, so it is difficult to 
+apply to the industrial field; 
+In view of the above problems, this paper applies the state-of-the-art YOLOv5 to the 
+defect detection task of steel pipe weld. 
+
+--- Strana 4 ---
+Materials and Methods 
+Profile of YOLOv5 
+Joseph Redmon et al. (2016a) published YOLOv1 in 2015, which pioneered the single-
+stage object detection algorithm. This algorithm divides images into 7*7 grids, and each 
+grid is responsible for the classification of objects and coordinate regression at the same 
+time. Joseph Redmon et al. (2016b) published YOLO9000 in 2016 to make up for the 
+shortcoming of YOLOv1 with fewer detection categories and low accuracy, but the 
+detection of small targets is still poor. Joseph Redmon et al. (2018) published YOLOv3 
+in 2018, which draws on the idea of FPN (Tsung-Yi Lin et al. 2017), and solves the 
+detection problem of small objects. Alexey Bochkovskiy et al. (2020) improved their 
+algorithm by absorbing the tricks of various fields on the basis of the network structure 
+of YOLOv3 and released YOLOv4, which greatly improved the detection efficiency 
+and AP. Two months later Ultralytics (a company) released YOLOv5 (Jocher et al. 
+2021). 
+According to the size of the model, YOLOv5 is divided into four versions: 
+YOLOv5s, YOLOv5m, YOLOv5l and YOLOv5x. The larger the model is, the higher 
+the accuracy will be, and the detection time of a single image will increase. Figure 1 
+shows the network structure of YOLOv5s. The technologies used in the Input of 
+YOLOv5 include Mosaic data enhancement (Sangdoo et al. 2019), adaptive anchor 
+calculation, and adaptive image scaling. The technology used in Backbone includes 
+Focus structure and CSP structure. The techniques used in Neck include FPN+PAN 
+structure; In Prediction, GIoU_Loss(Hamid Rezatofighi et al. 2019) is used to replace 
+the ordinary IoU calculation method.YOLOv5 is slightly less capable than YOLOv4 in 
+terms of performance, but much more flexible and faster than YOLOv4, so it has an 
+advantage in model deployment. 
+
+--- Strana 5 ---
+ 
+Figure 1. Network structure of YOLOv5s. 
+Acquisition of dataset 
+The raw video images of X-ray are provided by the cooperating factories in RAW 
+format. Through batch processing, the same width and height are cut out and exported 
+as JPG images, and 3408 original images of weld defects of 8 types of steel pipe are 
+obtained. Finally, Labelme (a software to mark object) was used to mark the defect area 
+and defect category of steel pipe weld, which was then exported as the standard dataset 
+format of YOLO or PASCAL VOC2007 (Ren et al. 2017). Figure 2 shows the types of 
+steel pipe weld defects. The collected samples have a total of 8 types of defects, which 
+are Blowhole, Undercut, Broken arc, Crack, Overlap, Slag inclusion, Lack of fusion, 
+and Hollow bead. Table 1 shows the statistical table of steel pipe weld defects samples. 
+(a) Blowhole 
+(b) Undercut 
+(c) Broken arc 
+(d) Crack 
+(e) Overlap 
+(f) Slag inclusion 
+(g) Lack of fusion 
+(h) Hollow bead 
+Backbone
+Neck
+Prediction
+Input
+608*608*3
+Focus
+CBL
+CSP1_1
+CBL
+CSP1_3
+CSP1_3
+CBL
+SPP
+CBL
+CBL
+CSP2_1
+Up-sample
+Concat
+CSP2_1
+CBL
+Up-sample
+CSP2_1
+Concat
+CSP2_1
+Concat
+CSP2_1
+Concat
+CBL
+Conv
+76*76*255
+38*38*255
+Conv
+Conv
+19*19*255
+CBL
+Conv BN
+CBL
+=
+CBL CBL
+Res unit
+=
+Add
+CSP1_X
+=
+CBL
+Res unit
+Conv
+Concat
+Conv
+Leaky ReLU
+CBL
+BN
+X number of Res un...
+CSP2_X
+=
+CBL
+2*X CBL
+Conv
+Concat
+Conv
+Focus
+=
+slice
+slice
+slice
+slice
+Concat
+CBL
+SPP
+=
+Maxpooling
+Maxpooling
+Maxpooling
+Concat
+CBL
+Leaky ReLU
+CBL
+BN
+Leaky ReLU
+Viewer does not support full SVG 1.1
+
+--- Strana 6 ---
+Figure 2. The example of steel pipe defects. 
+Table 1. Profile of sample images for 8 types of defects. 
+Defect name 
+Number of original samples 
+Number of augmented samples 
+Label 
+Blowhole 
+1339 
+12051 
+blow-hole 
+Undercut 
+35 
+315 
+undercut 
+Broken arc 
+531 
+4779 
+broken-arc 
+Crack 
+119 
+1071 
+crack 
+Overlap 
+219 
+1971 
+overlap 
+Slag inclusion 
+136 
+1224 
+slag-inclusion 
+Lack of fusion 
+416 
+3744 
+lack-of-fusion 
+Hollow bead 
+613 
+567 
+hollow-bead 
+Totals 
+3408 
+30672 
+—— 
+Data preprocessing 
+Raw dataset analysis 
+First of all, the original data should be analyzed so as to serve as a reference when 
+setting parameters for deep learning and to accelerate the training speed. It can be seen 
+from observation that X-ray pictures are black and white pictures, which can be 
+converted into single-channel grayscale images. In this way, 2/3 pixels data can be 
+compressed and the training speed will be accelerated. Then use Matplotlib (a python 
+lib to draw diagram) to draw the scatter plot of the center point position of the bounding 
+box and the length & width of the bounding box in turn to see if there are any extreme 
+aspect ratios and abnormal data. As shown in Figure 3, it can be concluded that most 
+bounding boxes are wider than their height and that the bounding boxes for cracked 
+defects are close to a square. Secondly, the displacement of most defects is in the 
+horizontal direction, and the displacement of Overlap defects is from the bottom right to 
+the top left. The distribution of scatter is more even, and there are not many abnormal 
+
+--- Strana 7 ---
+data. 
+Figure 3. The analysis of original samples. 
+Motion deblurring 
+When the cylindrical steel pipe rotates in the assembly line, there will have relative 
+movement between the X-ray camera used to film the weld defects of the steel pipe and 
+the steel pipe in the direction of the weld. Moreover, the exposure time of the camera to 
+shoot a single frame of weld defects is too long, so the motion blur will be generated. 
+According to the research of Kupyn et al. (2018), motion blur will have an impact on 
+the accuracy of object detection algorithm of YOLO series, so it is necessary to remove 
+motion blur in some images. The process of motion deblurring is shown in Figure 4. 
+First of all, we use the Hough Transform to detect the straight line at the weld edge. The 
+direction of motion of the steel pipe can be estimated from the angle of the straight line 
+(that is, the angle of image blur), and the distance of motion blur can be obtained from 
+the frame rate of the camera and the speed of the steel pipe rotation. Then we used the 
+estimated blurry kernel to deconvolution the original blurry image to get the result in 
+Figure 4c. 
+(a) Original blurry image 
+(b) Image after Hough Transform 
+(c) Deblurred image 
+
+--- Strana 8 ---
+Figure 4. The process of blind motion deblurring. 
+Data enhancement 
+Convolutional neural network (CNN) usually requires a large number of training 
+samples to effectively extract image features and classify them. in order to effectively 
+improve data quality and increase data feature diversity, the original data was enhanced 
+to 9 times the original data by using light change, random rotation, random cut out, 
+Gaussian noise addition, horizontal flipping, random adjustment of saturation, contrast 
+and sharpness, random resize and random clipping. Thus, the over-fitting in the training 
+stage is effectively reduced and the generalization ability of the network is improved. 
+Figure 5 shows an example of what happens after data enhancement. 
+(a) Original image 
+(b) Image after change light 
+(c) Image after rotate 
+(d) Image after cutout 
+(e) Image after gaussian noise 
+(f) Image after horizontal flip 
+(g) Image after adjust color 
+(h) Image after resize 
+(i) Image after crop 
+Figure 5. The example after data augmentation. 
+
+--- Strana 9 ---
+Experiments 
+Experimental environment 
+Table 2 and Table 3 are the hardware environment and software environment of the 
+experiment in this paper. 
+Table 2. The environment of hardware. 
+Phase 
+CPU 
+GPU 
+RAM 
+Train 
+Intel(R) Xeon(R) CPU E5-2623 v4 @ 2.60GHz 
+Quadro P5000 
+30GB 
+Test 
+Intel(R) Core(TM) i7-4710MQ CPU @ 2.50GHz 
+GTX950M 
+8GB 
+Table 3. The environment of software. 
+Phase 
+OS 
+Python 
+Model 
+Train 
+Linux-5.4.0-65-generic-x86_64-with-glibc2.10 
+3.8.5 
+Official YOLOv5x 
+Test 
+Windows 10 professional edition 
+3.8.0 
+Official YOLOv5x 
+Experimental process 
+In this paper, the state-of-the-art deep learning algorithm YOLOv5 is used to train the 
+detection model of steel pipe weld defects. After manually annotating the original 
+image, the dataset is obtained through data enhancement, and then the dataset is 
+converted into a single channel grayscale image. Because the dataset is relatively small, 
+it is divided into training set and validation set in a ratio of 8:2. An experimental process 
+designed in this paper is shown in Figure 6. After several epochs of YOLOv5 training, 
+the training set and validation set obtained a model containing weight and bias 
+parameters. In this paper, Recall, Precision, F1 score, mAP(mean of Average Precision) 
+and detection time of single image were used as evaluation indexes. 
+
+--- Strana 10 ---
+Figure 6. The flowchart of experiment. 
+The calculation method of Precision is shown in Formula (1). TP is the sample 
+identified as true positive. In this paper, it is the identification of correct weld defects of 
+steel pipe. FP is the sample identified as false positive. In this paper, it is the weld 
+defect of steel pipe identified wrongly. The formula describes the proportion of true 
+positive in the identified pictures of steel pipe weld defects. The calculation method of 
+Recall is shown in Formula (2). FN is the sample identified as false negative, in this 
+paper is the background of error identification; The formula describes the ratio of the 
+number of correctly identified steel pipe weld defects to the number of all steel pipe 
+weld defects in the dataset. The calculation method of F1 score is shown in Formula (3). 
+When Precision and Recall are required to be high, F1 score can be used as an 
+evaluation index. The calculation method of AP is shown in Formula (4). AP is 
+introduced to solve the problem of limitation of Precision, Recall and F1 score single 
+point value. In order to obtain an indicator that can reflect the global performance, In 
+this paper, using the Interpolated average precision. 
+Precision =
+𝑇𝑇𝑇𝑇
+𝑇𝑇𝑇𝑇+ 𝐹𝐹𝐹𝐹
+൫1൯ 
+Recall =
+𝑇𝑇𝑇𝑇
+𝑇𝑇𝑇𝑇+ 𝐹𝐹𝐹𝐹
+൫2൯ 
+𝐹𝐹1 = 2 ∗𝑃𝑃𝑃𝑃𝑃𝑃𝑃𝑃𝑃𝑃𝑃𝑃𝑃𝑃𝑃𝑃𝑃𝑃∗𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅
+𝑃𝑃𝑟𝑟𝑒𝑒𝑒𝑒𝑒𝑒𝑒𝑒𝑒𝑒𝑒𝑒𝑒𝑒+ 𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅
+൫3൯ 
+Original Data
+Data Preprocessing
+Training Set
+Validation Set
+YOLOv5x Model Training
+No
+Yes
+Reach the Criterion?
+Detection Result
+Engineering of Model
+Rcall Precision F1 mAP
+Viewer does not support full SVG 1.1
+
+--- Strana 11 ---
+𝑃𝑃interp(𝑘𝑘) = 𝑚𝑚𝑚𝑚𝑚𝑚
+𝑘𝑘෠≥𝑘𝑘 𝑃𝑃(𝑘𝑘෠)
+𝐴𝐴𝐴𝐴= ෍ 
+𝑁𝑁
+𝑘𝑘=1
+𝑃𝑃interp(𝑘𝑘)Δ𝑟𝑟(𝑘𝑘)
+൫4൯ 
+Analysis of experimental results 
+Identify results and data analysis 
+The detection result for 8 types of defects are shown in Figure 7. On the whole, both the 
+position of defects and the confidence of classification are relatively good. Undercut's 
+good performance in the case of a relatively small number of samples could not be 
+attributed to the 8 data enhancement methods used in the data preprocessing stage of 
+this paper and Mosaic data enhancement by YOLOv5. The Broken can still be 
+identified as the same defect and obtain good confidence even if they are very different 
+in appearance. Among them, the Slag inclusion defects are not obvious to distinguish 
+from the background in the naked eye, and they are similar to the Undercut defects in 
+appearance. Benefiting from repeated training, good results can also be achieved. 
+(a) Blowhole 
+(b) Undercut 
+(c) Broken arc 
+(d) Crack 
+(e) Overlap 
+(f) Slag inclusion 
+(g) Lack of fusion 
+(h) Hollow bead 
+Figure 7. The result of detection. 
+As shown in Table 4, four evaluation indexes of each defect category in the last 
+epoch are presented. On the whole, except for Blowhole defect, the accuracy of all other 
+defects can be maintained between 0.962 and 1.00, the recall rate between 0.99 and 
+
+--- Strana 12 ---
+1.00, and the F1 score between 0.998 and 1.00. Blowhole defect due to its small defect 
+target, a single steel pipe sometimes has dense pores, so the accuracy is lower than other 
+types of defects. In the 218th epoch, the mAP of the model reached 99.02%, but after 
+633 epochs of training, the mAP decreased to 98.71%, showing some degree of over-
+fitting. The best training model saved in this paper can be used in the actual steel pipe 
+weld defect detection and applied in the industrial production environment. 
+Table 4. Some statistical parameters of confusion matrix 
+Type 
+blowhole 
+undercut 
+broken-arc 
+crack 
+overlap 
+slag-inclusion 
+lack-of-
+fusion 
+hollow-
+bead 
+Precision 
+0.505 
+1.00 
+0.962 
+1.00 
+1.00 
+1.00 
+0.99 
+0.99 
+Recall 
+0.96 
+1.00 
+1.00 
+1.00 
+1.00 
+1.00 
+0.99 
+1.00 
+F1 score 
+0.661 
+1.00 
+0.98 
+1.00 
+1.00 
+1.00 
+0.99 
+0.994 
+AP 
+0.951 
+0.995 
+0.992 
+0.995 
+0.995 
+0.995 
+0.978 
+0.995 
+mAP@0.5 
+0.987 
+Performance comparison of weld defect detection algorithm for steel pipe 
+As shown in Figure 8, we used the same dataset to conduct experiments respectively in 
+Faster R-CNN (Ren et al. 2017; Bubbliiiing 2020) and YOLOv5 (Jocher et al. 2021), 
+then compared the precision data and total loss data generated during the experiment. 
+As shown in Figure 8a, Faster R-CNN calculates the precision mean after each epoch of 
+training, and has a tendency of descending and then slowly climbing, with unstable 
+values in the second half. YOLOv5, on the other hand, started off with a shaky 
+precision, then slowly climbed up and settled down. As shown in Figure 8b, the total 
+loss of Faster R-CNN tended to be stable between 50-100 epoch, and then had two 
+relatively large wave peaks. Since Faster R-CNN uses the Adam (Diederik Kingma et 
+al. 2014) optimizer, it can converge faster than SGD (Stochastic Gradient Descent). The 
+initial total loss of YOLOv5 was relatively small and tended to be stable between 100-
+
+--- Strana 13 ---
+150 epoch, with a small peak around 160 epoch. YOLOv5 also uses the optimizer 
+Adam, and the initial value of Momentum is 0.999. In general, compared with the 
+Faster R-CNN, YOLOv5 has better convergence speed in precision & total loss and 
+stability after convergence than the Faster R-CNN. 
+ 
+ 
+Figure 8. Compare with faster R-CNN 
+As shown in Table 5, a comparison is made between Multi-thresholds+SVM, 
+OSTU+SVM, Faster R-CNN+ResNet50 and YOLOv5. On the whole, the defect 
+detection algorithm based on deep learning is better than the defect detection algorithm 
+based on traditional computer vision in both performance and detection time of a single 
+image. Among them, Multi-thresholds+SVM algorithm takes the longest time. 
+Although the accuracy of the Multi-threshold+SVM algorithm is better than that of 
+Faster R-CNN, the detection time of single image is not as good as Faster R-CNN. 
+YOLOv5 is superior to Faster R-CNN in both accuracy and detection time of a single 
+image. The detection time of a single image satisfies the engineering work of the model 
+in the later stage of this paper. YOLOv5's detection speed is to be expected because it’s 
+one-stage. Another kind of object detection algorithms is two-stage. For example, the 
+Faster R-CNN algorithm forms region proposals (which may contain areas of the 
+object) first and then classifies each region proposal (also corrects the position at mean 
+
+--- Strana 14 ---
+time). This type of algorithm is relatively slow because it requires multiple runs of the 
+detection and classification process. 
+Table 5. Performance comparison of steel pipe defection algorithms 
+Object detection model 
+Accuracy or Precision/% 
+Detection time per picture/s 
+Multi-thresholds+SVM (Wang et al. 2008) 
+96.15 acc 
+180 (Mahmoudi et al. 2009) 
+OSTU+MSVM-rbf (Malarvel et al. 2021) 
+95.23 acc 
+—— 
+Faster R-CNN+ResNet50 (Ren et al. 2017) 
+95.5 acc(mAP@0.5=78.1) 
+0.437 
+YOLOv5x (Jocher et al. 2021) 
+97.8 pre(mAP@0.5=98.7) 
+0.120 
+Conclusion 
+In the field of steel pipe weld defect detection, deep learning method has more 
+advantages than traditional computer vision method. Convolutional neural network does 
+not need to extract image features manually, and can realize end-to-end input detection 
+and classified output. The research of this paper has the following three contributions: 
+• Applying the state-of-the-art object detection algorithm YOLOv5 to the field of 
+steel pipe weld defects detection, The detection accuracy of steel pipe weld 
+defects and the detection time of a single image are pushed to a new height 
+level, with the accuracy reaching 97.8% (mAP@0.5=98.7%). Under the 
+YOLOv5x model testing, the detection time of a single picture is 0.12s 
+(GPU=GTX950M), which meets the real-time detection on the steel pipe 
+production line; 
+• Did a lot of work in the data preprocessing stage, combining the traditional data 
+enhancement method with the Mosaic data enhancement method of YOLOv5, 
+which not only greatly increased the size of the dataset, but also effectively 
+reduced the over-fitting of the training; 
+
+--- Strana 15 ---
+• The results of YOLOv5 were compared with previous defect detection 
+algorithms, and the advantages of YOLOv5 in model deployment and model 
+engineering were demonstrated on the premise of comprehensive indicators. 
+This study can provide methods and ideas for real-time automatic detection of 
+weld defects of steel pipe in industrial production environment, and lay a foundation for 
+industrial automation. Although this paper uses state-of-the-art deep learning algorithm 
+and convolutional neural network model for real-time detection of steel pipe weld 
+defects in industrial production scenarios, its performance and performance are also 
+relatively good. However, in the case of limited dataset, other defects which not in the 
+dataset cannot be correctly identified. In this case, we can use traditional computer 
+vision or mathematical methods to build an expert system to identify other defects that 
+do not appear in the dataset. It is also possible to design an automatic updating model 
+system in combination with few-shot learning in engineering, which is used to manually 
+label the type and bounding box coordinate information by the quality inspector when 
+the defect cannot be identified, so that the system can automatically learn and update the 
+model. These deficiencies point out the direction and provide ideas for the follow-up 
+research. 
+References 
+Yun, J. P., Choi, S., Kim, J. W., and Kim, S. W. 2009. Automatic detection of cracks in 
+raw steel block using Gabor filter optimized by univariate dynamic encoding 
+algorithm for searches (uDEAS). Ndt & E International, 42(5), 389-397. 
+Wang, Y., Sun, Y., Lv, P., and Wang, H. 2008. Detection of line weld defects based on 
+multiple thresholds and support vector machine. Ndt & E International, 41(7), 
+517-524. 
+
+--- Strana 16 ---
+Malarvel, M., and Singh, H. 2021. An autonomous technique for weld defects detection 
+and classification using multi-class support vector machine in X-radiography 
+image. Optik, 231, 166342. 
+Joseph Redmon, Santosh Divvala, Ross Girshick, and Ali Farhadi. 2016a. You Only 
+Look Once: Unified, Real-Time Object Detection. arXiv preprint 
+arXiv:1506.02640. 
+Joseph Redmon, and Ali Farhadi. 2016b. YOLO9000: Better, Faster, Stronger. arXiv 
+preprint arXiv:1612.08242. 
+Joseph Redmon, and Ali Farhadi. 2018. YOLOv3: An Incremental Improvement. arXiv 
+preprint arXiv:1804.02767. 
+Tsung-Yi Lin, Piotr Dollár, Ross Girshick, Kaiming He, Bharath Hariharan, and Serge 
+Belongie. 2017. Feature Pyramid Networks for Object Detection. arXiv preprint 
+arXiv:1612.03144. 
+Alexey Bochkovskiy, Chien-Yao Wang, and Hong-Yuan Mark Liao. 2020. YOLOv4: 
+Optimal Speed and Accuracy of Object Detection. arXiv preprint 
+arXiv:2004.10934. 
+Jocher, G., Nishimura, K., Mineeva, T., Vilariño, and R. YOLOv5. Accessed March 1, 
+2021. https://github.com/ultralytics/yolov5.  
+Sangdoo Yun, Dongyoon Han, Seong Joon Oh, Sanghyuk Chun, Junsuk Choe, and 
+Youngjoon Yoo. 2019. CutMix: Regularization Strategy to Train Strong 
+Classifiers with Localizable Features. arXiv preprint arXiv:1905.04899. 
+Hamid Rezatofighi, Nathan Tsoi, JunYoung Gwak, Amir Sadeghian, Ian Reid, and 
+Silvio Savarese. 2019. Generalized Intersection over Union: A Metric and A 
+Loss for Bounding Box Regression. arXiv preprint arXiv:1902.09630. 
+Xinni Liu, Kamarul Hawari Ghazali, Fengrong Han, and Izzeldin Ibrahim Mohamed. 
+2020. Automatic Detection of Oil Palm Tree from UAV Images Based on the 
+Deep Learning Method. Applied Artificial Intelligence,2020. 
+Ren, S., K. He, R. Girshick, and J. Sun. 2017. Faster R-CNN: Towards real-time object 
+detection with region proposal networks. IEEE Transactions on Pattern Analysis 
+and Machine Intelligence 39 (6):1137-49. doi:10.1109/TPAMI.2016.2577031. 
+Kupyn, O., Budzan, V., Mykhailych, M., Mishkin, D., and Matas, J. 2018. Deblurgan: 
+Blind motion deblurring using conditional adversarial networks. In Proceedings 
+of the IEEE conference on computer vision and pattern recognition (pp. 8183-
+8192). 
+
+--- Strana 17 ---
+Bubbliiiing. Faster-Rcnn: Implementation of Two-Stage object detection model in 
+Tensorflow2. Accessed December 1, 2020. https://github.com/bubbliiiing/faster-
+rcnn-tf2. 
+Diederik Kingma, and Jimmy Ba. 2014. Adam: A Method for Stochastic Optimization. 
+arXiv preprint arXiv:1412.6980. 
+Xiang Long, Kaipeng Deng, Guanzhong Wang, Yang Zhang, Qingqing Dang, Yuan 
+Gao, Hui Shen, Jianguo Ren, Shumin Han, Errui Ding, and Shilei Wen. 2020. 
+PP-YOLO: An Effective and Efficient Implementation of Object Detector. arXiv 
+preprint arXiv:2007.12099. 
+Mahmoudi, A., and Regragui, F. 2009. Fast segmentation method for defects detection 
+in radiographic images of welds. In 2009 IEEE/ACS International Conference 
+on Computer Systems and Applications (pp. 857-860). IEEE. 
+Author Contributions 
+Conceptualization, D.Y., Y.C., and Z.Y.; Software, D.M., Resources, Z.Y., H.Y.; 
+Supervision, Y.C., Z.Y.; Writing—original draft, D.Y.; Writing—review and editing, 
+D.Y., Y.C., and Z.Y. All authors have read and agreed to the published version of the 
+manuscript. 
